@@ -182,10 +182,6 @@ resource "aws_db_instance" "tf_rds" {
 }
 
 
-#data "template_file" "userdata" {
-#  template = "${file("${path.module}/ec2_user_data.sh")}"
-#}
-
 resource "aws_instance" "tf_ec2_instance" {
   count = var.settings.ec2_instance.count
   ami = var.settings.ec2_instance.ami
@@ -193,7 +189,30 @@ resource "aws_instance" "tf_ec2_instance" {
   key_name = var.settings.ec2_instance.key_name
   security_groups = [aws_security_group.tf_ec2_sg.id]
   subnet_id = aws_subnet.tf_public_subnet[count.index].id
-  #user_data = "${data.template_file.userdata.rendered}"
+  user_data = <<EOF
+#!/bin/bash
+sudo apt-get update
+sudo apt install git
+sudo apt-get install python3
+sudo apt install python3-pip -y
+sudo apt install apache2 -y
+sudo apt-get install libapache2-mod-wsgi-py3
+sudo pip3 install Flask SQLAlchemy Flask-SQLAlchemy psycopg2-binary
+sudo mv /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/000-default.conf.old
+sudo mkdir //project && cd /project
+sudo git clone https://github.com/mcherkashyn/pet-projects.git
+cd pet-projects/terraform_with_aws/flaskapp
+sudo mv apache2_config.conf /etc/apache2/sites-enabled/
+sudo sed -i '7 i\dialect = "${var.settings.database.dialect}"' flaskapp.py
+sudo sed -i '8 i\username = "${var.settings.database.username}"' flaskapp.py
+sudo sed -i '9 i\password = "${var.settings.database.password}"' flaskapp.py
+sudo sed -i '10 i\host = "${aws_db_instance.tf_rds.address}"' flaskapp.py
+sudo sed -i '11 i\port = "${var.settings.database.port}"' flaskapp.py
+sudo sed -i '12 i\database = "${var.settings.database.db_name}"' flaskapp.py
+cd ..
+sudo mv flaskapp /var/www/html
+sudo systemctl reload apache2
+EOF
 
   tags = {
     Name = "tf_ec2_instance"

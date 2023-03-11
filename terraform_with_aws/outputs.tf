@@ -14,8 +14,3 @@ output "database_endpoint" {
     description = "The endpoint of the database"
     value = aws_db_instance.tf_rds.address
 }
-
-output "database_port" {
-    description = "The port of the database"
-    value = aws_db_instance.tf_rds.port
-}
