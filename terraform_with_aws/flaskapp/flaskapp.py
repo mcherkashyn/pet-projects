@@ -8,11 +8,9 @@ from sqlalchemy import or_
 
 
 
-"""try:
-    from local_settings import *
-except:
-    print("can't find local_settings")
-"""
+
+
+
 
 app = Flask(__name__)
 

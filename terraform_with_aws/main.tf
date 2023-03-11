@@ -10,110 +10,102 @@ data "aws_availability_zones" "available" {
 }
 
 
-resource "aws_vpc" "tf-vpc" {
+resource "aws_vpc" "tf_vpc" {
   cidr_block = var.vpc_cidr_block
   enable_dns_hostnames = true
   enable_dns_support = true
   tags = {
-    Name = "tf-vpc"
+    Name = "tf_vpc"
   }
 }
 
 
-resource "aws_eip" "tf-eip" {
+resource "aws_eip" "tf_eip" {
   count = var.settings.ec2_instance.count
-  instance = aws_instance.tf-ec2-instance[count.index].id
+  instance = aws_instance.tf_ec2_instance[count.index].id
   vpc = true
   tags = {
-    Name = "tf-eip"
+    Name = "tf_eip"
   }
 }
 
 
-resource "aws_subnet" "tf-public-subnet" {
+resource "aws_subnet" "tf_public_subnet" {
   count = var.subnet_count.public
-  vpc_id            = aws_vpc.tf-vpc.id
+  vpc_id            = aws_vpc.tf_vpc.id
   cidr_block        = var.public_subnet_cidr_blocks[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
   tags = {
-    Name = "tf-public-subnet"
+    Name = "tf_public_subnet"
   }
 }
 
 
-resource "aws_subnet" "tf-private-subnet" {
+resource "aws_subnet" "tf_private_subnet" {
   count = var.subnet_count.private
-  vpc_id = aws_vpc.tf-vpc.id
+  vpc_id = aws_vpc.tf_vpc.id
   cidr_block = var.private_subnet_cidr_blocks[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
   tags = {
-    Name = "tf-private-subnet"
+    Name = "tf_private_subnet"
   }
 }
 
 
-resource "aws_internet_gateway" "tf-igw" {
-  vpc_id = aws_vpc.tf-vpc.id
+resource "aws_internet_gateway" "tf_igw" {
+  vpc_id = aws_vpc.tf_vpc.id
   tags = {
-    Name = "tf-igw"
+    Name = "tf_igw"
   }
 }
 
 
-resource "aws_route_table" "tf-public-route-table" {
-  vpc_id = aws_vpc.tf-vpc.id
+resource "aws_route_table" "tf_public_route_table" {
+  vpc_id = aws_vpc.tf_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.tf-igw.id
+    gateway_id = aws_internet_gateway.tf_igw.id
   }
 
   tags = {
-    Name = "tf-public-route-table"
+    Name = "tf_public_route_table"
   }
 }
 
 
-resource "aws_route_table" "tf-private-route-table" {
-  vpc_id = aws_vpc.tf-vpc.id
+resource "aws_route_table" "tf_private_route_table" {
+  vpc_id = aws_vpc.tf_vpc.id
 
   tags = {
-    Name = "tf-private-route-table"
+    Name = "tf_private_route_table"
   }
 }
 
 
-resource "aws_route_table_association" "tf-private-rt-association" {
+resource "aws_route_table_association" "tf_private_rt_association" {
   count = var.subnet_count.private
-  subnet_id = aws_subnet.tf-private-subnet[count.index].id
-  route_table_id = aws_route_table.tf-private-route-table.id 
+  subnet_id = aws_subnet.tf_private_subnet[count.index].id
+  route_table_id = aws_route_table.tf_private_route_table.id 
 }
 
 
-resource "aws_route_table_association" "tf-public-rt-association" {
+resource "aws_route_table_association" "tf_public_rt_association" {
   count = var.subnet_count.public
-  subnet_id      = aws_subnet.tf-public-subnet[count.index].id
-  route_table_id = aws_route_table.tf-public-route-table.id 
+  subnet_id      = aws_subnet.tf_public_subnet[count.index].id
+  route_table_id = aws_route_table.tf_public_route_table.id 
 }
 
 
-resource "aws_security_group" "tf-ec2-sg" {
-  name        = "tf-ec2-sg"
+resource "aws_security_group" "tf_ec2_sg" {
+  name        = "tf_ec2_sg"
   description = "Security group for ec2 instance"
-  vpc_id      = aws_vpc.tf-vpc.id
+  vpc_id      = aws_vpc.tf_vpc.id
 
   ingress {
     description = "Allow HTTP traffic"
     from_port   = 80
     to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "Allow Flask traffic"
-    from_port   = 5000
-    to_port     = 5000
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -135,41 +127,41 @@ resource "aws_security_group" "tf-ec2-sg" {
   }
 
   tags = {
-    Name = "tf-ec2-sg"
+    Name = "tf_ec2_sg"
   }
 }
 
 
-resource "aws_security_group" "tf-rds-sg" {
-  name        = "tf-rds-sg"
+resource "aws_security_group" "tf_rds_sg" {
+  name        = "tf_rds_sg"
   description = "Security group for rds instance"
-  vpc_id      = aws_vpc.tf-vpc.id
+  vpc_id      = aws_vpc.tf_vpc.id
 
   ingress {
     description = "Allow rds traffic only for ec2 instance"
-    from_port   = 5432
-    to_port     = 5432
+    from_port   = var.settings.database.port
+    to_port     = var.settings.database.port
     protocol    = "tcp"
-    security_groups = [aws_security_group.tf-ec2-sg.id]
+    security_groups = [aws_security_group.tf_ec2_sg.id]
   }
   
   tags = {
-    Name = "tf-rds-sg"
+    Name = "tf_rds_sg"
   }
 }
 
 
-resource "aws_db_subnet_group" "tf-db-subnet-group" {
-  name       = "tf-db-subnet-group"
-  subnet_ids = [for subnet in aws_subnet.tf-private-subnet : subnet.id]
+resource "aws_db_subnet_group" "tf_db_subnet_group" {
+  name       = "tf_db_subnet_group"
+  subnet_ids = [for subnet in aws_subnet.tf_private_subnet : subnet.id]
 
   tags = {
-    Name = "tf-db-subnet-group"
+    Name = "tf_db_subnet_group"
   }
 }
 
 
-resource "aws_db_instance" "tf-rds" {
+resource "aws_db_instance" "tf_rds" {
   allocated_storage = var.settings.database.allocated_storage
   storage_type = var.settings.database.storage_type
   engine = var.settings.database.engine
@@ -181,29 +173,29 @@ resource "aws_db_instance" "tf-rds" {
   publicly_accessible = var.settings.database.publicly_accessible
   skip_final_snapshot = var.settings.database.skip_final_snapshot
   port = var.settings.database.port
-  db_subnet_group_name = aws_db_subnet_group.tf-db-subnet-group.id
-  vpc_security_group_ids = [aws_security_group.tf-rds-sg.id]
+  db_subnet_group_name = aws_db_subnet_group.tf_db_subnet_group.id
+  vpc_security_group_ids = [aws_security_group.tf_rds_sg.id]
 
   tags = {
-    Name = "tf-rds"
+    Name = "tf_rds"
   }
 }
 
 
 #data "template_file" "userdata" {
-#  template = "${file("${path.module}/ec2-user-data.sh")}"
+#  template = "${file("${path.module}/ec2_user_data.sh")}"
 #}
 
-resource "aws_instance" "tf-ec2-instance" {
+resource "aws_instance" "tf_ec2_instance" {
   count = var.settings.ec2_instance.count
   ami = var.settings.ec2_instance.ami
   instance_type = var.settings.ec2_instance.instance_type
   key_name = var.settings.ec2_instance.key_name
-  security_groups = [aws_security_group.tf-ec2-sg.id]
-  subnet_id = aws_subnet.tf-public-subnet[count.index].id
+  security_groups = [aws_security_group.tf_ec2_sg.id]
+  subnet_id = aws_subnet.tf_public_subnet[count.index].id
   #user_data = "${data.template_file.userdata.rendered}"
 
   tags = {
-    Name = "tf-ec2-instance"
+    Name = "tf_ec2_instance"
   }
 }
