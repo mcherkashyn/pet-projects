@@ -2,7 +2,7 @@ In this project I use Terraform to automate the deployment of a simple web appli
 
 Project steps:
 
-1. Writing Terraform config for AWS infrastructure creating, it consists: ec2 instance for running the web application, ELB and postgresql database.
+1. Writing Terraform config for AWS infrastructure creating, it consists: ec2 instance for running the web application and postgresql database.
 
 2. Deployment the infranstructure using Terraform CLI to the cloud platform.
 
