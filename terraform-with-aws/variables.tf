@@ -50,6 +50,7 @@ variable "settings" {
                         engine = "postgres"
                         engine_version = "15.2"
                         instance_class = "db.t3.micro"
+                        dialect = "postgresql"
                         db_name = "projectdb"
                         username = "datauser"
                         password = "datapass"
