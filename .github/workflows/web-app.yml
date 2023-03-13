@@ -20,13 +20,14 @@ jobs:
         python-version: "3.10"
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install Flask
-        pip install pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        sudo apt-get install python3
+        sudo apt install python3-pip -y
+        pip3 install Flask
+        pip3 install pytest
+        if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
     - name: Test with pytest
       run: |
-        pwd
+        python --version
         ls
-        pytest ci_cd_with_aws/flaskapp/flaskapp.py
+        pytest ./ci_cd_with_aws/flaskapp/flaskapp.py
    
