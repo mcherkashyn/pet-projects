@@ -1,0 +1,2 @@
+variables.tf filter=secrets
+main.tf filter=secrets

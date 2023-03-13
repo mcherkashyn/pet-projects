@@ -1,0 +1,3 @@
+[filter "secrets"]
+  clean = sed '/access_key/d;/secret_key/d'
+  smudge = cat
