@@ -37,9 +37,9 @@ jobs:
           terraform init
           terraform apply -auto-approve
 
-      - name: Output app URL
+      - name: Terraform output
         run: |
-          cd terraform
-          terraform output app_url
+          terraform output -json > terraform_output.json
+          cat terraform_output.json | jq
 
 
