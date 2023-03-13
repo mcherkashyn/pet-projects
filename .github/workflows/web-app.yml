@@ -29,5 +29,6 @@ jobs:
         flake8 ./ci_cd_with_aws --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-          pytest ci_cd_with_aws/
+          cd ci_cd_with_aws/
+          pytest
    
