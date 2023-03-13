@@ -22,12 +22,11 @@ jobs:
       run: |
         sudo apt-get install python3
         sudo apt install python3-pip -y
-        pip3 install Flask
-        pip3 install pytest
-        if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
+        sudo pip3 install Flask
+        sudo pip3 install pytest
+        if [ -f requirements.txt ]; then sudo pip3 install -r requirements.txt; fi
     - name: Test with pytest
       run: |
-        python --version
         ls
-        pytest ./ci_cd_with_aws/flaskapp/flaskapp.py
+        sudo pytest ci_cd_with_aws/flaskapp/flaskapp.py
    
