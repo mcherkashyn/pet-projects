@@ -33,6 +33,7 @@ jobs:
       - name: Build and deploy app
         run: |
           source env/bin/activate
+          cd ci_cd_with_aws/
           terraform init
           terraform plan
           terraform apply -auto-approve
