@@ -1,4 +1,3 @@
-/*
 variable "access_key" {
         description = "Access key to AWS console"
 }
@@ -9,7 +8,6 @@ variable "secret_key" {
 variable "aws_region" {
         default = "us-east-1"
 }
-*/
 
 variable "subnet_count" {
         description = "Number of subnets"
