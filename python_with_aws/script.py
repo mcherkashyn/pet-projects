@@ -86,7 +86,7 @@ class Create_resources():
                     'Tags': [
                         {
                             'Key': 'Name',
-                            'Value': 'boto3-igw'
+                            'Value': 'boto3_igw'
                         },
                     ]
                 },
@@ -117,7 +117,7 @@ class Create_resources():
                     'Tags': [
                         {
                             'Key': 'Name',
-                            'Value': 'boto3-rt'
+                            'Value': 'boto3_rt'
                         },
                     ]
                 },
@@ -161,7 +161,7 @@ class Create_resources():
                     'Tags': [
                         {
                             'Key': 'Name',
-                            'Value': 'boto3-master-sg'
+                            'Value': 'boto3_master_sg'
                         },
                     ]
                 },
@@ -223,7 +223,7 @@ class Create_resources():
                     'Tags': [
                         {
                             'Key': 'Name',
-                            'Value': 'boto3-master-ec2'
+                            'Value': 'boto3_master_ec2'
                         },
                     ]
                 },
@@ -241,7 +241,7 @@ class Create_resources():
 
 
 
-"""creating = Create_resources()
+creating = Create_resources()
 print(creating.create_vpc())
 print(creating.create_public_subnet())
 print(creating.create_igw())
@@ -250,7 +250,7 @@ print(creating.create_rt())
 print(creating.create_route())
 print(creating.create_rt_association())
 print(creating.create_master_sg())
-print(creating.create_master_ec2())"""
+print(creating.create_master_ec2())
 
 
 
@@ -258,24 +258,56 @@ class Destruction():
 
     def describe_resources(self):
 
+        self.master_sg = client.describe_security_groups(Filters=[{'Name': 'tag:Name', 'Values': ['boto3_master_sg']}])
+
+        for group in self.master_sg['SecurityGroups']:
+            self.group_id = group['GroupId']
+            self.group_name = group['GroupName']
+            print(f"Security Group ID: {self.group_id}, Name: {self.group_name}")
+
+
+        self.master_rt = client.describe_route_tables(Filters=[{'Name': 'tag:Name', 'Values': ['boto3_rt']}])
+
+        for route_table in self.master_rt['RouteTables']:
+            self.route_table_id = route_table['RouteTableId']
+            print(f"Route Table ID: {self.route_table_id}")
+
+
+        self.master_igw = client.describe_internet_gateways(Filters=[{'Name': 'tag:Name', 'Values': ['boto3_igw']}])
+
+        for gateway in self.master_igw['InternetGateways']:
+            self.gateway_id = gateway['InternetGatewayId']
+            print(f"Internet Gateway ID: {self.gateway_id}")
+
+
+        public_subnet = client.describe_subnets(Filters=[{'Name': 'tag:Name', 'Values': ['boto3_subnet']}])
+
+        for subnet in public_subnet['Subnets']:
+            self.subnet_id = subnet['SubnetId']
+            print(f"Subnet ID: {self.subnet_id}")
+
+
         vpc = client.describe_vpcs(
             Filters=[{'Name': 'tag:Name', 'Values': ['boto3_vpc']}]
         )
 
         self.vpc_id = (vpc['Vpcs'][0]['VpcId'])
 
-        print(self.vpc_id)
+        print(f"VPC ID: {self.vpc_id}")
 
-        ec2_instance = client.describe_instances(Filters=[{'Name': 'tag:Name', 'Values': ['boto3-master-ec2']}]
+        ec2_instance = client.describe_instances(Filters=[{'Name': 'tag:Name', 'Values': ['boto3_master_ec2']}]
         )
 
         for reservation in ec2_instance['Reservations']:
             for instance in reservation['Instances']:
                 self.instance_id = instance['InstanceId']
 
-        print(self.instance_id)
+        print(f"Master instance ID: {self.instance_id}")
+
+
 
     def destroy_resources(self):
+
 
         master_ec2 = client.terminate_instances(
             InstanceIds=[
@@ -286,16 +318,54 @@ class Destruction():
 
         client.get_waiter('instance_terminated').wait(InstanceIds=[self.instance_id])
 
-        print("boto3_master_ec2 was destroyed!")
+        print("boto3_master_ec2 was deleted!")
 
 
+        for rtb in self.master_rt['RouteTables']:
+            for association in rtb['Associations']:
+                if not association['Main']:
+                    client.disassociate_route_table(AssociationId=association['RouteTableAssociationId'])
+
+        for rtb in self.master_rt['RouteTables']:
+            for route in rtb['Routes']:
+                if route['Origin'] != 'CreateRouteTable':
+                    client.delete_route(RouteTableId=rtb['RouteTableId'], DestinationCidrBlock=route['DestinationCidrBlock'])
+
+        for rtb in self.master_rt['RouteTables']:
+            client.delete_route_table(RouteTableId=rtb['RouteTableId'])
+
+        print("master_rt was deleted!")
 
 
+        for igw in self.master_igw['InternetGateways']:
+            for attachment in igw['Attachments']:
+                client.detach_internet_gateway(InternetGatewayId=igw['InternetGatewayId'],
+                                                   VpcId=attachment['VpcId'])
+
+        for igw in self.master_igw['InternetGateways']:
+            client.delete_internet_gateway(InternetGatewayId=igw['InternetGatewayId'])
+
+        print("master_igw was deleted!")
 
 
+        public_subnet = client.delete_subnet(
+            SubnetId=self.subnet_id,
+            DryRun=False
+        )
+
+        print("public_subnet was deleted!")
 
 
+        for sg in self.master_sg['SecurityGroups']:
+            for ip_permission in sg['IpPermissions']:
+                client.revoke_security_group_ingress(GroupId=sg['GroupId'], IpPermissions=[ip_permission])
+            for ip_permission in sg['IpPermissionsEgress']:
+                client.revoke_security_group_egress(GroupId=sg['GroupId'], IpPermissions=[ip_permission])
 
+        for sg in self.master_sg['SecurityGroups']:
+                client.delete_security_group(GroupId=sg['GroupId'])
+
+        print("master_sg was deleted!")
 
 
         vpc = client.delete_vpc(
@@ -303,7 +373,7 @@ class Destruction():
             DryRun=False
         )
 
-        print("boto3_vpc was destroyed!")
+        return "boto3_vpc with all dependencies was destroyed!"
 
 
 
@@ -312,77 +382,12 @@ class Destruction():
 
 dest = Destruction()
 dest.describe_resources()
-#print(dest.destroy_resources())
+print(dest.destroy_resources())
 
 
 
-"""class destroy_resources(Create_resources):
-    # destroy ec2 instances
-    def destroy_instances(self):
-        response = client.terminate_instances(
-            InstanceIds=[
-                self.instance,
-            ],
-            DryRun=False
-        )
-        return response
 
 
-    # destroy security groups
-    def destroy_sgs(self):
-        response = client.delete_security_group(
-            GroupId=self.security_group,
-            DryRun=False
-        )
-        return response
-
-
-    #delete route tables
-    def destroy_rts(self):
-        response = client.delete_route_table(
-            DryRun=False,
-            RouteTableId=self.route_table
-        )
-        return response
-
-
-    #delete internet gateway
-    def destroy_igw(self):
-        response = client.delete_internet_gateway(
-            DryRun=True | False,
-            InternetGatewayId='string'
-        )
-        return response
-
-
-    #destroy subnet
-    def destroy_subnet(self):
-        response = client.delete_subnet(
-            SubnetId=self.subnet,
-            DryRun=False
-        )
-        return response
-
-
-    #destroy vpc
-    def destroy_vpc(self):
-        response = client.delete_vpc(
-            VpcId=self.vpc,
-            DryRun=True | False
-        )
-        return response
-
-"""
-
-"""creating = Create_resources()
-attrs = (getattr(creating, name) for name in dir(creating))
-methods = filter(inspect.ismethod, attrs)
-for method in methods:
-    try:
-        method()
-    except TypeError:
-        # Can't handle methods with required arguments.
-        pass"""
 
 
 
