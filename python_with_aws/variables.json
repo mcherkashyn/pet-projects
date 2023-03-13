@@ -1,0 +1,25 @@
+{
+    "_comment": "aws_variables",
+
+    "VPCCidrBlock": "172.20.0.0/16",
+
+    "SubnetCidrBlock": "172.20.1.0/24",
+    "SubnetAvailabilityZone": "us-east-1a",
+
+    "RouteDestinationCidrBlock": "0.0.0.0/0",
+
+    "ec2ami": "ami-0557a15b87f6559cf",
+    "ec2count": 1,
+    "ec2InstanceType": "t2.micro",
+    "ec2KeyName": "test-key-pair",
+
+    "AutoScalingGroupName": "monitoring-auto-scaling-group-3",
+    "LaunchConfigurationName": "monitoring-ami-lc",
+    "MaxSize": 3,
+    "MinSize": 1,
+    "DesiredCapacity": 3,
+    "TargetGroupARNs": ["arn:aws:elasticloadbalancing:us-east-1:746279167188:targetgroup/monitoring-tg/9fdcc74eba646128"],
+    "VPCZoneIdentifier": "subnet-0d0193b1c458c9c2f"
+}
+
+
