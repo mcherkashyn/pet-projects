@@ -51,4 +51,3 @@ jobs:
           
           echo "** Running Terraform Apply**"
           terraform apply terraform.plan -auto-approve -input=false
-
