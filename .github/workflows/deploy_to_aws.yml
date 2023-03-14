@@ -25,11 +25,6 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1 
           
-      #- name: Download Terraform state
-      #    run: |
-      #    cd ci_cd_with_aws/
-      #    terraform state pull > terraform.tfstate
-          
       - name: Setup Terraform CLI
         uses: hashicorp/setup-terraform@v1
         with:
@@ -40,14 +35,12 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          echo `pwd`
-          cd ci_cd_with_aws/
-          
           echo "** Running Terraform Init**"
           terraform init -input=false
       
           echo "** Running Terraform Plan**"
-          terraform plan -out=terraform.plan
+          terraform plan
           
           echo "** Running Terraform Apply**"
-          terraform apply terraform.plan -auto-approve -input=false
+          terraform apply -auto-approve -input=false
+        working-directory: "./ci_cd_with_aws"

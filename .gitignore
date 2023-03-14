@@ -1,5 +1,4 @@
 .idea
 /*/.terraform
-
-/terraform_with_aws/.terraform.*
-/terraform_with_aws/terraform.*
+/*/.terraform.*
+/*/terraform.*
