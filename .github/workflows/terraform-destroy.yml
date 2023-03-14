@@ -31,5 +31,6 @@ jobs:
         run: |
           echo `pwd`
           cd ci_cd_with_aws/
-          
+          terraform init
+          terraform plan
           terraform destroy -auto-approve -input=false
