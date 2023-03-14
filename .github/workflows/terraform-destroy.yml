@@ -1,4 +1,4 @@
-name: Deploy Flask app to AWS with Terraform
+name: Destroy Terraform resources
 
 on:
   push:
@@ -11,12 +11,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
-        
-      - name: Install dependencies
-        run: |
-          python -m venv env
-          source env/bin/activate
-          pip install -r ci_cd_with_aws/flaskapp/requirements.txt
         
       - name: Configure AWS Credentials Action For GitHub Actions
         uses: aws-actions/configure-aws-credentials@v1
@@ -37,13 +31,6 @@ jobs:
         run: |
           echo `pwd`
           cd ci_cd_with_aws/
-          
-          echo "** Running Terraform Init**"
-          terraform init -input=false
-      
-          echo "** Running Terraform Validate**"
-          terraform validate
-          
-          echo "** Running Terraform Apply**"
-          terraform apply -auto-approve -input=false
-          
+          terraform init
+          terraform plan
+          terraform destroy -auto-approve -input=false
