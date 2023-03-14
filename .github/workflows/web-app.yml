@@ -25,10 +25,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1 
           
-      - name: Download Terraform state
-        run: |
-          cd ci_cd_with_aws/
-          terraform state pull > terraform.tfstate
+      #- name: Download Terraform state
+      #    run: |
+      #    cd ci_cd_with_aws/
+      #    terraform state pull > terraform.tfstate
           
       - name: Setup Terraform CLI
         uses: hashicorp/setup-terraform@v1
