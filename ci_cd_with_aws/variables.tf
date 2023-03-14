@@ -35,3 +35,7 @@ variable "settings" {
                 }
         }
 }
+
+variable "bucket_name" {
+        default = "tfbackend434"
+}
