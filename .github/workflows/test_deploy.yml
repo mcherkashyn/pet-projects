@@ -40,8 +40,13 @@ jobs:
         run: terraform plan -no-color
         working-directory: "./ci_cd_with_aws"
 
+      - name: Terraform Destroy
+        id: destroy
+        if: github.event_name == 'push'
+        run: terraform destroy -auto-approve
+        working-directory: "./ci_cd_with_aws"
+
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: terraform apply -auto-approve
         working-directory: "./ci_cd_with_aws"
-        
