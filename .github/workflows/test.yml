@@ -1,5 +1,8 @@
 name: cicd
-on: [push]
+on:
+  push:
+    branches:
+      - main
 jobs:
   build-services:
     env:
@@ -8,10 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v1
 
     - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
+      uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -35,21 +38,32 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Install dependencies
+      run: |
+        python -m venv env
+        source env/bin/activate
+        pip install -r ci_cd_with_aws/flaskapp/requirements.txt
+
     - name: Setup terraform
       uses: hashicorp/setup-terraform@v1
+      with:
+            terraform_version: 1.3.9
 
-    - name: Init terraform
-      working-directory: ./ci_cd_with_aws
-      run: terraform init
+    - name: Terraform init, plan and apply
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          echo "** Running Terraform Init**"
+          terraform init -input=false
+      
+          echo "** Running Terraform Plan**"
+          terraform plan
+          
+          echo "** Running Terraform Apply**"
+          terraform apply -auto-approve -input=false
+        working-directory: "./ci_cd_with_aws"
 
-    - name: Plan terraform
-      working-directory: ./ci_cd_with_aws
-      run: terraform plan
-
-#    - name: Destroy the ec2 instances
+#    - name: Destroy the resources
 #      working-directory: ./ci_cd_with_aws
 #      run: terraform destroy -auto-approve
-
-    - name: Terraform apply infrastructure
-      working-directory: ./ci_cd_with_aws
-      run: terraform apply -auto-approve
