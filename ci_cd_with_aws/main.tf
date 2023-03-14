@@ -14,6 +14,7 @@ resource "aws_vpc" "tf_vpc" {
   enable_dns_support = true
   tags = {
     Name = "tf_vpc"
+    Terraform = "true"
   }
 }
 
@@ -24,6 +25,7 @@ resource "aws_eip" "tf_eip" {
   vpc = true
   tags = {
     Name = "tf_eip"
+    Terraform = "true"
   }
 }
 
@@ -35,6 +37,7 @@ resource "aws_subnet" "tf_public_subnet" {
   availability_zone = data.aws_availability_zones.available.names[count.index]
   tags = {
     Name = "tf_public_subnet"
+    Terraform = "true"
   }
 }
 
@@ -43,6 +46,7 @@ resource "aws_internet_gateway" "tf_igw" {
   vpc_id = aws_vpc.tf_vpc.id
   tags = {
     Name = "tf_igw"
+    Terraform = "true"
   }
 }
 
@@ -57,6 +61,7 @@ resource "aws_route_table" "tf_public_route_table" {
 
   tags = {
     Name = "tf_public_route_table"
+    Terraform = "true"
   }
 }
 
@@ -99,6 +104,7 @@ resource "aws_security_group" "tf_ec2_sg" {
 
   tags = {
     Name = "tf_ec2_sg"
+    Terraform = "true"
   }
 }
 
@@ -131,5 +137,6 @@ EOF
 
   tags = {
     Name = "tf_ec2_instance"
+    Terraform = "true"
   }
 }
