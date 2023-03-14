@@ -44,6 +44,7 @@ jobs:
           
           echo "** Running Terraform Apply**"
           terraform apply -auto-approve -input=false
+          continue-on-error: true
       working-directory: "./ci_cd_with_aws/backend"
 
 
