@@ -1,0 +1,55 @@
+name: cicd
+on: [push]
+jobs:
+  build-services:
+    env:
+      AWS_REGION: us-east-1
+
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@13d241b293754004c80624b5567555c4a39ffbe3
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Install dependencies
+        run: |
+          python -m venv env
+          source env/bin/activate
+          pip install -r ci_cd_with_aws/flaskapp/requirements.txt
+
+  update-infrastructure:
+    needs: [build-services]
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Init terraform
+      working-directory: ./ci_cd_with_aws
+      run: terraform init
+
+    - name: Plan terraform
+      working-directory: ./ci_cd_with_aws
+      run: terraform plan
+
+#    - name: Destroy the ec2 instances
+#      working-directory: ./ci_cd_with_aws
+#      run: terraform destroy -auto-approve
+
+    - name: Terraform apply infrastructure
+      working-directory: ./ci_cd_with_aws
+      run: terraform apply -auto-approve
