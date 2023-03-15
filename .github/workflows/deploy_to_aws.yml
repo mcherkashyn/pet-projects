@@ -40,15 +40,20 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     - name: Terraform backend init, plan and apply
-      run: terraform init -input=false
+      run: | 
+        terraform init -input=false
       continue-on-error: true
       working-directory: "./ci_cd_with_aws/backend"
+
     - name: Terraform backend init, plan and apply
-      run: terraform terraform plan
+      run: |
+        terraform terraform plan
       continue-on-error: true
       working-directory: "./ci_cd_with_aws/backend"
+
     - name: Terraform backend init, plan and apply  
-      run: terraform apply -auto-approve -input=false
+      run: | 
+        terraform apply -auto-approve -input=false
       continue-on-error: true
       working-directory: "./ci_cd_with_aws/backend"
    
