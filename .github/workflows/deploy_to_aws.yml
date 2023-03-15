@@ -55,7 +55,6 @@ jobs:
       working-directory: "./ci_cd_with_aws/backend"
    
 
-
   update-infrastructure:
     needs: [build-services]
     runs-on: ubuntu-latest
