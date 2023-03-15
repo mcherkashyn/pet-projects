@@ -45,6 +45,10 @@ jobs:
           echo "** Running Terraform Apply**"
           terraform apply -auto-approve -input=false
           continue-on-error: true
+
+    - name: Step 3
+      run: echo "This step will only run if Step 2 fails"
+
       working-directory: "./ci_cd_with_aws/backend"
 
 
