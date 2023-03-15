@@ -24,7 +24,7 @@ variable "public_subnet_cidr_block" {
 }
 
 variable "settings" {
-        description = "Configuration settings"
+        description = "Configuration ec2 settings"
         type = map(any)
         default = {
                 "ec2_instance" = {
@@ -34,8 +34,4 @@ variable "settings" {
                         key_name = "test-key-pair"
                 }
         }
-}
-
-variable "bucket_name" {
-        default = "tfbackend434"
 }
