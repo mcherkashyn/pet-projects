@@ -109,6 +109,16 @@ resource "aws_security_group" "tf_ec2_sg" {
 }
 
 
+resource "aws_cloudwatch_log_group" "flask_logs" {
+  name = "/flask_logs"
+}
+
+resource "aws_cloudwatch_log_stream" "flask_log_stream" {
+  name            = "flask_log_stream"
+  log_group_name  = aws_cloudwatch_log_group.flask_logs.name
+}
+
+
 resource "aws_instance" "tf_ec2_instance" {
   count = var.settings.ec2_instance.count
   ami = var.settings.ec2_instance.ami
@@ -116,21 +126,7 @@ resource "aws_instance" "tf_ec2_instance" {
   key_name = var.settings.ec2_instance.key_name
   security_groups = [aws_security_group.tf_ec2_sg.id]
   subnet_id = aws_subnet.tf_public_subnet[count.index].id
-  user_data = <<EOF
-#!/bin/bash
-sudo apt-get update
-sudo apt install git
-sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release -y
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
-sudo apt install docker-ce docker-ce-cli containerd.io -y
-sudo mkdir //project && cd /project
-sudo git clone https://github.com/mcherkashyn/pet-projects.git
-cd pet-projects/docker_with_aws/web_app/
-sudo docker build -t docker_web_app .
-sudo docker run -p 80:80 docker_web_app:latest
-EOF
+  user_data = "${file("user_data.sh")}"
 
   tags = {
     Name = "tf_ec2_instance"
