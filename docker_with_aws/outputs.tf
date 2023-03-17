@@ -1,3 +1,4 @@
+
 output "ec2_public_ip" {
     description = "The public IP address of the ec2 instance"
     value = aws_eip.tf_eip[0].public_ip

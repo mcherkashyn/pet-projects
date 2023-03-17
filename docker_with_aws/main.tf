@@ -109,13 +109,61 @@ resource "aws_security_group" "tf_ec2_sg" {
 }
 
 
-resource "aws_cloudwatch_log_group" "flask_logs" {
-  name = "/flask_logs"
+resource "aws_iam_role" "tf_ec2_logs_role" {
+  name = "tf_ec2_logs_role"
+  
+  assume_role_policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "ec2.amazonaws.com"
+        },
+        "Action": "sts:AssumeRole"
+      }
+    ]
+  })
+
+  inline_policy {
+    name = "my_inline_policy"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+            "Action": "ec2:*",
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "cloudwatch:*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "logs:*",
+            "Resource": "*"
+        },
+      ]
+    })
+  }
+
+  tags = {
+    "tag-key" = "ec2_logs_role"
+  }
 }
 
-resource "aws_cloudwatch_log_stream" "flask_log_stream" {
-  name            = "flask_log_stream"
-  log_group_name  = aws_cloudwatch_log_group.flask_logs.name
+
+resource "aws_iam_instance_profile" "tf_iam_role_profile" {
+  name = "tf_iam_role_profile"
+  role = aws_iam_role.tf_ec2_logs_role.name
+}
+
+
+resource "aws_cloudwatch_log_group" "flask_logs" {
+  name = "/flask_logs"
 }
 
 
@@ -123,6 +171,7 @@ resource "aws_instance" "tf_ec2_instance" {
   count = var.settings.ec2_instance.count
   ami = var.settings.ec2_instance.ami
   instance_type = var.settings.ec2_instance.instance_type
+  iam_instance_profile = aws_iam_instance_profile.tf_iam_role_profile.name
   key_name = var.settings.ec2_instance.key_name
   security_groups = [aws_security_group.tf_ec2_sg.id]
   subnet_id = aws_subnet.tf_public_subnet[count.index].id
