@@ -55,7 +55,7 @@ jobs:
       working-directory: "./ci_cd_with_aws/backend/"
 
 
-        #deploy the app 
+      #deploy the app 
     - name: Terraform app init
       run: | 
         terraform init -input=false
@@ -75,7 +75,7 @@ jobs:
       working-directory: "./ci_cd_with_aws/"
 
 
-#        #destroy the app
+#      #destroy the app
 #    - name: Terraform app init
 #      run: | 
 #        terraform init -input=false
