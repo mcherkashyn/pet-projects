@@ -125,24 +125,7 @@ resource "aws_instance" "tf_ec2_instance" {
   key_name = var.settings.ec2_instance.key_name
   security_groups = [aws_security_group.tf_ec2_sg.id]
   subnet_id = aws_subnet.tf_public_subnet[count.index].id
-  user_data = <<EOF
-#!/bin/bash
-sudo apt-get update
-sudo apt install git
-sudo apt-get install python3
-sudo apt install python3-pip -y
-sudo apt install apache2 -y
-sudo apt-get install libapache2-mod-wsgi-py3
-sudo pip3 install Flask
-sudo mv /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/000-default.conf.old
-sudo mkdir //project && cd /project
-sudo git clone https://github.com/mcherkashyn/pet-projects.git
-cd pet-projects/ci_cd_with_aws/flaskapp
-sudo mv apache2_config.conf /etc/apache2/sites-enabled/
-cd ..
-sudo mv flaskapp /var/www/html
-sudo systemctl reload apache2
-EOF
+  user_data = "${file("user_data.sh")}"
 
   tags = {
     Name = "tf_ec2_instance"
