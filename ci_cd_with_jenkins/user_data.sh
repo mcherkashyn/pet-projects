@@ -12,5 +12,5 @@ sudo sh -c 'echo deb [signed-by=/usr/share/keyrings/jenkins.gpg] http://pkg.jenk
 sudo apt-get update
 sudo apt install jenkins -y
 sudo sed -i '16 i\PATH=/bin:/usr/bin:/sbin:/usr/sbin:/usr/lib/jvm/java-17-openjdk-amd64/bin/' /etc/init.d/jenkins
-sudo service jenkins start
 sudo usermod -aG docker jenkins
+sudo service jenkins start

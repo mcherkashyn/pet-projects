@@ -77,6 +77,14 @@ resource "aws_security_group" "tf_ec2_sg" {
   vpc_id      = aws_vpc.tf_vpc.id
 
   ingress {
+    description = "Allow Flask"
+    from_port   = 5000
+    to_port     = 5000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     description = "Allow Jenkins"
     from_port   = 8080
     to_port     = 8080
