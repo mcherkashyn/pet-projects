@@ -5,7 +5,7 @@ pipeline {
 
 	  stage('Checkout') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: 'main']], 
+                checkout([$class: 'GitSCM', branches: [[name: '']], 
                          doGenerateSubmoduleConfigurations: false, extensions: [
                             [$class: 'hudson.plugins.git.extensions.impl.CloneOption', noTags: true, reference: '', shallow: true, timeout: 15],
                             [$class: 'hudson.plugins.git.extensions.impl.LocalBranch', localBranch: 'main'],
