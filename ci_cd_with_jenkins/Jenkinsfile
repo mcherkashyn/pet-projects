@@ -3,12 +3,10 @@ pipeline {
 	
     stages {
 
-		stage('Clone repo') {
+
+		stage('fetch_latest_code') {
 			steps {
-				sh 'echo "downloading repo..."'
-				sh "git clone https://github.com/mcherkashyn/pet-projects.git"
-				sh "ls"
-				sh "pwd"
+			git credentialsId: '17371c59-6b11-42c7-bb25-a37a9febb4db', url: 'https://github.com/PrashantBhatasana/terraform-jenkins-ec2'
 			}
 		}
 
@@ -34,12 +32,7 @@ pipeline {
 				sh 'terraform apply -input=false'
 			}
 		}
-		stage('Remove the old files'){
-			steps {
-				sh 'echo "deleting the files..."'
-				sh "rm -r pet-projects"
-			}
-		}
+		
 	} 
 
 }
