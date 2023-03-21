@@ -3,26 +3,14 @@ pipeline {
 	
     stages {
 
-
-		/*
-		stage('fetch_latest_code') {
-			steps {
-				git credentialsId: 'git_pass', url: 'https://github.com/mcherkashyn/pet-projects'
-			}
-		}
-		*/
-
 		stage('TF Init&Plan') {
 			steps {
-					sh "ls"
-					sh "pwd"
-					sh 'cd docker_with_aws'
-					sh "ls"
-					sh "pwd"
-					sh 'terraform init'
-					sh 'terraform plan'
-				}
+				sh "ls"
+				sh "pwd"
+				sh 'cd docker_with_aws && terraform init'
+				sh 'cd docker_with_aws && terraform plan'
 			}      
+		}
 
 		stage('Approval') {
 			steps {
@@ -33,7 +21,7 @@ pipeline {
 						submitterParameter: 'approved_by',
 						parameters: [
 							[$class: 'BooleanParameterDefinition', 
-							defaultValue: false, 
+							defaultValue: true, 
 							description: 'Apply terraform', 
 							name: 'confirm']
 						]
@@ -47,10 +35,8 @@ pipeline {
 
 		stage('TF Apply') {
 			steps {
-					sh "cd docker_with_aws/"
-					sh 'terraform apply -input=false'
-				}
+				sh 'cd docker_with_aws && terraform apply -input=false'
 			}
-		}	
-} 
-
+		}
+	}	
+}
