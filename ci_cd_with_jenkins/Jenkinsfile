@@ -1,7 +1,27 @@
 pipeline {
 	agent any
-	
+
     stages {
+
+	  stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], 
+                         doGenerateSubmoduleConfigurations: false, extensions: [
+                            [$class: 'hudson.plugins.git.extensions.impl.CloneOption', noTags: true, reference: '', shallow: true, timeout: 15],
+                            [$class: 'hudson.plugins.git.extensions.impl.LocalBranch', localBranch: 'main'],
+                            [$class: 'hudson.plugins.git.extensions.impl.CleanCheckout'],
+                            [$class: 'hudson.plugins.git.extensions.impl.IgnoreNotifyCommit'],
+                         ],
+                         refSpecs: [[
+                            refspec: '+refs/pull/*:refs/remotes/origin/pr/*',
+                            pruneBranches: false,
+                            force: false,
+                         ]],
+                         userRemoteConfigs: [[url: 'https://github.com/mcherkashyn/pet-projects.git']]])
+            }
+      }
+    
+
 
       stage('fetch_latest_code') {
         steps {
