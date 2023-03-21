@@ -1,40 +1,35 @@
 pipeline {
-    agent any
-
+	agent any
+	
     stages {
-        dir('docker_with_aws') {
-            stage('fetch_latest_code') {
-                steps {
-                    git credentialsId: 'Jenkins_GitHub_Token', url: 'https://github.com/mcherkashyn/pet-projects.git'
-                }
-            }
-        }
 
-        dir('docker_with_aws') {
-            stage('TF Init&Plan') {
-                steps {
-                    sh 'terraform init'
-                    sh 'terraform plan'
-                }      
-            }
+      stage('fetch_latest_code') {
+        steps {
+          git credentialsId: 'Jenkins_GitHub_Token', url: 'https://github.com/mcherkashyn/pet-projects.git'
         }
+      }
 
-        dir('docker_with_aws') {
-            stage('Approval') {
-                steps {
-                    script {
-                        def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
-                    }
-                }
-            }
-        }
+      stage('TF Init&Plan') {
+        steps {
+		  sh 'cd pet-projects/docker_with_aws/'
+          sh 'terraform init'
+          sh 'terraform plan'
+        }      
+      }
 
-        dir('docker_with_aws') {
-            stage('TF Apply') {
-                steps {
-                    sh 'terraform apply -input=false'
-                }
-            }
+      stage('Approval') {
+        steps {
+          script {
+            def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
+          }
         }
-    }
-}
+      }
+
+      stage('TF Apply') {
+        steps {
+		  sh 'cd pet-projects/docker_with_aws/'
+          sh 'terraform apply -input=false'
+        }
+      }
+    } 
+  }
