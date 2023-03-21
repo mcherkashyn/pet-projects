@@ -6,7 +6,6 @@ pipeline {
         stage('TF Init & Plan') {
             steps {
                 dir('docker_with_aws') {
-                    sh 'ls'
                     sh 'pwd'
                     sh 'terraform init'
                     sh 'terraform plan'
