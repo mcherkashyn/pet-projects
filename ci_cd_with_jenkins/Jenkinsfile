@@ -16,7 +16,7 @@ pipeline {
 			steps {
 					sh "ls"
 					sh "pwd"
-					sh 'cd docker_with_aws/'
+					sh 'cd docker_with_aws'
 					sh "ls"
 					sh "pwd"
 					sh 'terraform init'
