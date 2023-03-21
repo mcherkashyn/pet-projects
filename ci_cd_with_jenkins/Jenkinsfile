@@ -12,6 +12,8 @@ pipeline {
 
 		stage('TF Init&Plan') {
 			steps {
+				sh "ls"
+				sh "pwd"
 				sh 'cd pet-projects/docker_with_aws/'
 				sh 'terraform init'
 				sh 'terraform plan'
