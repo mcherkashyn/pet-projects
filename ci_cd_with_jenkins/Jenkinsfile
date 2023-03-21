@@ -5,7 +5,7 @@ pipeline {
 
       stage('fetch_latest_code') {
         steps {
-          git credentialsId: 'git_pass', url: 'https://github.com/mcherkashyn/pet-projects.git'
+          git credentialsId: 'git_pass', url: 'https://github.com/mcherkashyn/pet-projects'
         }
       }
 
