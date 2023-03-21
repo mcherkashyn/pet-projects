@@ -1,23 +1,24 @@
 pipeline {
 	agent any
-
+	
     stages {
-
-	dir('path/to/other/work/directory') {
-		
+	  dir('docker_with_aws') {
       stage('fetch_latest_code') {
         steps {
           git credentialsId: 'Jenkins_GitHub_Token', url: 'https://github.com/mcherkashyn/pet-projects.git'
         }
-      }
-
+	  }
+	  }
+	  dir('docker_with_aws') {
       stage('TF Init&Plan') {
         steps {
           sh 'terraform init'
           sh 'terraform plan'
         }      
-      }
+	  }
+	  }
 
+	  dir('docker_with_aws') {
       stage('Approval') {
         steps {
           script {
@@ -25,7 +26,9 @@ pipeline {
           }
         }
       }
+	  }
 
+	  dir('docker_with_aws') {
       stage('TF Apply') {
         steps {
           sh 'terraform apply -input=false'
