@@ -4,13 +4,13 @@ pipeline {
     stages {
 
 
-		
+		/*
 		stage('fetch_latest_code') {
 			steps {
 				git credentialsId: 'git_pass', url: 'https://github.com/mcherkashyn/pet-projects'
 			}
 		}
-		
+		*/
 
 		stage('TF Init&Plan') {
 			steps {
