@@ -34,7 +34,7 @@ agent any
 			steps {
 				sh 'echo "running the application..."'
 				sh "cd pet-projects/ci_cd_with_jenkins/web_app/"
-				sh 'docker run -d -p 80:80 --name docker_web_app docker_web_app:latest'
+				sh 'docker run -d -p 5000:5000 --name docker_web_app docker_web_app:latest'
 			}
 		}	
 	}
