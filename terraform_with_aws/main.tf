@@ -201,12 +201,12 @@ sudo mkdir //project && cd /project
 sudo git clone https://github.com/mcherkashyn/pet-projects.git
 cd pet-projects/terraform_with_aws/flaskapp
 sudo mv apache2_config.conf /etc/apache2/sites-enabled/
-sudo sed -i '7 i\dialect = "${var.settings.database.dialect}"' flaskapp.py
-sudo sed -i '8 i\username = "${var.settings.database.username}"' flaskapp.py
-sudo sed -i '9 i\password = "${var.settings.database.password}"' flaskapp.py
-sudo sed -i '10 i\host = "${aws_db_instance.tf_rds.address}"' flaskapp.py
-sudo sed -i '11 i\port = "${var.settings.database.port}"' flaskapp.py
-sudo sed -i '12 i\database = "${var.settings.database.db_name}"' flaskapp.py
+sudo sed -i '1 i\dialect = "${var.settings.database.dialect}"' local_settings.py
+sudo sed -i '2 i\username = "${var.settings.database.username}"' local_settings.py
+sudo sed -i '3 i\password = "${var.settings.database.password}"' local_settings.py
+sudo sed -i '4 i\host = "${aws_db_instance.tf_rds.address}"' local_settings.py
+sudo sed -i '5 i\port = "${var.settings.database.port}"' local_settings.py
+sudo sed -i '6 i\database = "${var.settings.database.db_name}"' local_settings.py
 cd ..
 sudo mv flaskapp /var/www/html
 sudo systemctl reload apache2
