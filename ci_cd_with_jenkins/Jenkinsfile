@@ -1,57 +1,36 @@
 pipeline {
-agent any
-stages {
-    stage('Stop the container') {
-    steps {
-		sh 'echo "stopping..."'
-		sh 'docker rm -f docker_web_app && echo "container docker_web_app removed" || echo "container docker_web_app does not exist"'
-	    sh 'ls'
-	}
-	}
-	
-	stage('Clone repo') {
-    steps {
-		sh 'echo "downloading repo..."'
-		sh "git clone https://github.com/mcherkashyn/pet-projects.git"
-	    sh "ls"
-	}
-	}
+    agent {
+      node {
+        label "master"
+      } 
+    }
 
-    stage('Build') {
-	steps {
-	    sh 'echo "building the container..."'
-		sh 'docker build -t docker_web_app:latest pet-projects/ci_cd_with_jenkins/web_app'
-	}
-	}
-	
-	stage('Run') {
-	steps {
-	    sh 'echo "running the application..."'
-	    sh "cd pet-projects/ci_cd_with_jenkins/web_app/"
-		sh 'docker run -d -p 5000:5000 --name docker_web_app docker_web_app:latest'
-	}
-	}
+    stages {
+      stage('fetch_latest_code') {
+        steps {
+          git credentialsId: 'Jenkins_GitHub_Token', url: 'https://github.com/mcherkashyn/pet-projects/tree/main/docker_with_aws'
+        }
+      }
 
-	stage('Remove the old files')
-	{
-	steps {
-		echo "deleting the files..."
-		sh "rm -r pet-projects"
-	}
-	}
-}
+      stage('TF Init&Plan') {
+        steps {
+          sh 'terraform init'
+          sh 'terraform plan'
+        }      
+      }
 
-post {
-		always {
-			echo 'The pipeline completed'
-			junit allowEmptyResults: true, testResults:'**/test_reports/*.xml'
-		}
-		success {				
-			echo "Flask Application Up and running!!"
-		}
-		failure {
-			echo 'Build stage failed'
-			error('Stopping early…')
-		}
-	}
-}
+      stage('Approval') {
+        steps {
+          script {
+            def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
+          }
+        }
+      }
+
+      stage('TF Apply') {
+        steps {
+          sh 'terraform apply -input=false'
+        }
+      }
+    } 
+  }
