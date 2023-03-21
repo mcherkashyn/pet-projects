@@ -1,42 +1,46 @@
 pipeline {
-	agent any
+    agent any
 	
     stages {
 
-		stage('TF Init&Plan') {
-			steps {
-				sh "ls"
-				sh "pwd"
-				sh 'cd docker_with_aws && terraform init'
-				sh 'cd docker_with_aws && terraform plan'
-			}      
-		}
+        stage('TF Init & Plan') {
+            steps {
+                dir('docker_with_aws') {
+                    sh 'ls'
+                    sh 'pwd'
+                    sh 'terraform init'
+                    sh 'terraform plan'
+                }      
+            }
+        }
 
-		stage('Approval') {
-			steps {
-				script {
-					def userInput = input(
-						id: 'confirm', 
-						message: 'Apply Terraform?', 
-						submitterParameter: 'approved_by',
-						parameters: [
-							[$class: 'BooleanParameterDefinition', 
-							defaultValue: true, 
-							description: 'Apply terraform', 
-							name: 'confirm']
-						]
-					)
-					if (!userInput.confirm) {
-						error('Deployment was not approved')
-					}
-				}
-			}
-		}
+        stage('Approval') {
+            steps {
+                script {
+                    def userInput = input(
+                        id: 'confirm', 
+                        message: 'Apply Terraform?', 
+                        submitterParameter: 'approved_by',
+                        parameters: [
+                            [$class: 'BooleanParameterDefinition', 
+                            defaultValue: true, 
+                            description: 'Apply terraform', 
+                            name: 'confirm']
+                        ]
+                    )
+                    if (!userInput.confirm) {
+                        error('Deployment was not approved')
+                    }
+                }
+            }
+        }
 
-		stage('TF Apply') {
-			steps {
-				sh 'cd docker_with_aws && terraform apply -input=false'
-			}
-		}
-	}	
+        stage('TF Apply') {
+            steps {
+                dir('docker_with_aws') {
+                    sh 'terraform apply -input=false'
+                }
+            }
+        }
+    }	
 }
