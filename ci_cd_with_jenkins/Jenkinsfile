@@ -1,9 +1,10 @@
 pipeline {
 	agent any
-	options {
-        pwd 'docker_with_aws'
-    }
+
     stages {
+
+	dir('path/to/other/work/directory') {
+		
       stage('fetch_latest_code') {
         steps {
           git credentialsId: 'Jenkins_GitHub_Token', url: 'https://github.com/mcherkashyn/pet-projects.git'
@@ -31,4 +32,5 @@ pipeline {
         }
       }
     } 
+	}
   }
