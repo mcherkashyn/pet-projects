@@ -1,55 +1,45 @@
 pipeline {
 	agent any
-
+	
     stages {
 
-	  stage('Checkout') {
-            steps {
-                checkout([$class: 'GitSCM', branches: [[name: '']], 
-                         doGenerateSubmoduleConfigurations: false, extensions: [
-                            [$class: 'hudson.plugins.git.extensions.impl.CloneOption', noTags: true, reference: '', shallow: true, timeout: 15],
-                            [$class: 'hudson.plugins.git.extensions.impl.LocalBranch', localBranch: 'main'],
-                            [$class: 'hudson.plugins.git.extensions.impl.CleanCheckout'],
-                            [$class: 'hudson.plugins.git.extensions.impl.IgnoreNotifyCommit'],
-                         ],
-                         refSpecs: [[
-                            refspec: '+refs/pull/*:refs/remotes/origin/pr/*',
-                            pruneBranches: false,
-                            force: false,
-                         ]],
-                         userRemoteConfigs: [[url: 'https://github.com/mcherkashyn/pet-projects.git']]])
-            }
-      }
-    
+		stage('Clone repo') {
+			steps {
+				sh 'echo "downloading repo..."'
+				sh "git clone https://github.com/mcherkashyn/pet-projects.git"
+				sh "ls"
+				sh "pwd"
+			}
+		}
 
+		stage('TF Init&Plan') {
+			steps {
+				sh 'cd pet-projects/docker_with_aws/'
+				sh 'terraform init'
+				sh 'terraform plan'
+			}      
+		}
 
-      stage('fetch_latest_code') {
-        steps {
-          git credentialsId: 'git_pass', url: 'https://github.com/mcherkashyn/pet-projects'
-        }
-      }
+		stage('Approval') {
+			steps {
+				script {
+					def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
+				}
+			}
+		}
 
-      stage('TF Init&Plan') {
-        steps {
-		  sh 'cd pet-projects/docker_with_aws/'
-          sh 'terraform init'
-          sh 'terraform plan'
-        }      
-      }
+		stage('TF Apply') {
+			steps {
+				sh 'cd pet-projects/docker_with_aws/'
+				sh 'terraform apply -input=false'
+			}
+		}
+		stage('Remove the old files'){
+			steps {
+				sh 'echo "deleting the files..."'
+				sh "rm -r pet-projects"
+			}
+		}
+	} 
 
-      stage('Approval') {
-        steps {
-          script {
-            def userInput = input(id: 'confirm', message: 'Apply Terraform?', parameters: [ [$class: 'BooleanParameterDefinition', defaultValue: false, description: 'Apply terraform', name: 'confirm'] ])
-          }
-        }
-      }
-
-      stage('TF Apply') {
-        steps {
-		  sh 'cd pet-projects/docker_with_aws/'
-          sh 'terraform apply -input=false'
-        }
-      }
-    } 
-  }
+}
