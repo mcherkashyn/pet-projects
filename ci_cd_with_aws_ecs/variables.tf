@@ -47,7 +47,7 @@ variable "settings" {
 }
 
 variable project_name {
-  default = "github-action-ecr"
+  default = "github-actions-ecr"
 }
 
 variable profile {
@@ -55,7 +55,7 @@ variable profile {
 }
 
 variable ecr_image {
-  default = "772320319753.dkr.ecr.us-east-1.amazonaws.com/github-action-ecr:1.0.0"
+  default = "772320319753.dkr.ecr.us-east-1.amazonaws.com/github-actions-ecr:1.0.0"
 }
 
 variable desired_count {
