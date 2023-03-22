@@ -43,7 +43,7 @@ jobs:
 
     - name: Sed
       run: |
-        cd web_app
+        cd ci_cd_with_aws_ecs/web_app
         sed -i 's/{{ACCOUNT_ID}}/${{ secrets.ACCOUNT_ID }}/' task-definition.json
 
     - name: Render Amazon ECS task definition
