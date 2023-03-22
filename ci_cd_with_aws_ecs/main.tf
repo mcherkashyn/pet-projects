@@ -270,6 +270,7 @@ resource aws_ecs_service ecs_service {
   desired_count       = var.desired_count
   scheduling_strategy = "REPLICA"
 
+
   network_configuration {
     subnets          = [aws_subnet.tf_public_subnet.id, aws_subnet.tf_public_subnet_2.id]
     security_groups  = [aws_security_group.ecs_tasks.id, aws_security_group.alb.id]
