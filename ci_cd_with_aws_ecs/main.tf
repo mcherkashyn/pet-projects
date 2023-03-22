@@ -70,6 +70,7 @@ resource "aws_route_table_association" "route_table_association_1" {
   route_table_id = aws_route_table.tf_public_route_table.id
 }
 
+
 resource "aws_route_table_association" "route_table_association_2" {
   subnet_id      = aws_subnet.tf_public_subnet_2.id
   route_table_id = aws_route_table.tf_public_route_table.id
@@ -103,6 +104,7 @@ resource "aws_security_group" "alb" {
   }
 }
 
+
 resource "aws_security_group" "ecs_tasks" {
   name        = "${var.project_name}-ecs"
   description = "inbound: 80 from ALB security group + outbound: all"
@@ -135,6 +137,7 @@ resource "aws_alb" "alb" {
   }
 }
 
+
 resource "aws_alb_target_group" "alb_target_group" {
   name        = var.project_name
   port        = 80
@@ -142,6 +145,7 @@ resource "aws_alb_target_group" "alb_target_group" {
   vpc_id      = aws_vpc.tf_vpc.id
   target_type = "ip"
 }
+
 
 resource aws_alb_listener alb_listener {
   load_balancer_arn = aws_alb.alb.arn
@@ -160,12 +164,6 @@ resource "aws_ecr_repository" "demo-repository" {
 }
 
 
-
-#
-# ecs assume role policy
-#
-
-# trust relationships
 data "aws_iam_policy_document" "ecs_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -181,18 +179,13 @@ resource "aws_iam_role" "ecs_service_role" {
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
 }
 
-# attach service-role/AmazonEC2ContainerServiceRole
-# Default policy for Amazon ECS service role
+
 resource aws_iam_role_policy_attachment ecs_service_attachment {
   role       = aws_iam_role.ecs_service_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
 }
 
-#
-# ecs-task assume role policy
-#
 
-# trust relationships
 data aws_iam_policy_document ecs_task_assume_role_policy {
   statement {
     actions = ["sts:AssumeRole"]
@@ -205,13 +198,11 @@ data aws_iam_policy_document ecs_task_assume_role_policy {
 
 
 resource aws_iam_role ecs_task_execution_role {
-  name               = "${var.project_name}-ecs-task-execution-role"
+  name               = "ecsTaskExecutionRole"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role_policy.json
 }
 
 
-# attach service-role/AmazonECSTaskExecutionRolePolicy
-# Provides access to other AWS service resources that are required to run Amazon ECS tasks
 resource aws_iam_role_policy_attachment ecs_task_execution_attachment {
   role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
@@ -222,9 +213,11 @@ resource aws_ecs_cluster ecs_cluster {
   name = var.project_name
 }
 
+
 resource aws_cloudwatch_log_group log_group {
   name = "${var.project_name}-log-group"
 }
+
 
 resource aws_ecs_task_definition task_definition {
   family                = var.project_name
@@ -262,6 +255,7 @@ DEFINITION
   memory                   = 512
 }
 
+
 resource aws_ecs_service ecs_service {
   name                = var.project_name
   cluster             = aws_ecs_cluster.ecs_cluster.id
@@ -285,4 +279,3 @@ resource aws_ecs_service ecs_service {
 
   depends_on = [aws_alb_listener.alb_listener]
 }
-
