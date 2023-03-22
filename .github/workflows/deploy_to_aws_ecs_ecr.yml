@@ -41,19 +41,18 @@ jobs:
         echo "::set-output name=image::$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG"
       working-directory: "./ci_cd_with_aws_ecs/web_app"
 
-    # - name: Sed
-    #   run: |
-    #     cd ci_cd_with_aws_ecs/web_app
-    #     sed -i 's/{{ACCOUNT_ID}}/${{ secrets.ACCOUNT_ID }}/' task-definition.json
+    - name: Sed
+      run: |
+        cd ci_cd_with_aws_ecs/web_app
+        sed -i 's/{{ACCOUNT_ID}}/${{ secrets.ACCOUNT_ID }}/' task-definition.json
 
     - name: Render Amazon ECS task definition
       id: task-def
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
-        task-definition: task-definition.json
+        task-definition: ci_cd_with_aws_ecs/web_app/task-definition.json
         container-name: site
         image: ${{ steps.build-image.outputs.image }}
-        working-directory: "./ci_cd_with_aws_ecs/web_app"
 
     - name: Deploy to Amazon ECS service
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
