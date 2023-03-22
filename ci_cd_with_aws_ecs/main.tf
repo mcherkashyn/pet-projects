@@ -156,7 +156,7 @@ resource aws_alb_listener alb_listener {
 
 resource "aws_ecr_repository" "demo-repository" {
   name                 = var.project_name
-  image_tag_mutability = "IMMUTABLE"
+  image_tag_mutability = "MUTABLE"
 }
 
 resource "aws_ecr_repository_policy" "demo-repo-policy" {
