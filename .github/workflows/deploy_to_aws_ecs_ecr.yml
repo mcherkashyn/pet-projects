@@ -1,4 +1,4 @@
-name: Deploy Flask app to AWS with Terraform
+name: Deploy Flask app to AWS ECS
 on:
   push:
     branches:

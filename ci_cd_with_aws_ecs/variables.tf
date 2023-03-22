@@ -6,8 +6,7 @@ variable "subnet_count" {
         description = "Number of subnets"
         type = map(number)
         default = {
-                public = 1,
-                private = 1,
+                public = 2
         }
 }
 
@@ -45,4 +44,20 @@ variable "settings" {
                         key_name = "test-key-pair"
                 }
         }
+}
+
+variable project_name {
+  default = "github-action-ecr"
+}
+
+variable profile {
+  default = "default"
+}
+
+variable ecr_image {
+  default = "772320319753.dkr.ecr.us-east-1.amazonaws.com/github-action-ecr:1.0.0"
+}
+
+variable desired_count {
+  default = 2
 }
