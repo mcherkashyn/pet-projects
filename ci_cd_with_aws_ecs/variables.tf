@@ -20,8 +20,9 @@ variable project_name {
   default = "github-actions-ecr"
 }
 
+
 variable ecr_image {
-  default = "772320319753.dkr.ecr.us-east-1.amazonaws.com/github-actions-ecr:1.0.0"
+  type = string
 }
 
 variable desired_count {
