@@ -147,7 +147,7 @@ resource "aws_alb_target_group" "alb_target_group" {
 }
 
 
-resource aws_alb_listener alb_listener {
+resource "aws_alb_listener" "alb_listener" {
   load_balancer_arn = aws_alb.alb.arn
   port              = 80
   protocol          = "HTTP"
@@ -180,13 +180,13 @@ resource "aws_iam_role" "ecs_service_role" {
 }
 
 
-resource aws_iam_role_policy_attachment ecs_service_attachment {
+resource "aws_iam_role_policy_attachment" "ecs_service_attachment" {
   role       = aws_iam_role.ecs_service_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
 }
 
 
-data aws_iam_policy_document ecs_task_assume_role_policy {
+data "aws_iam_policy_document" "ecs_task_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
     principals {
@@ -197,29 +197,29 @@ data aws_iam_policy_document ecs_task_assume_role_policy {
 }
 
 
-resource aws_iam_role ecs_task_execution_role {
+resource "aws_iam_role" "ecs_task_execution_role" {
   name               = "ecsTaskExecutionRole"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role_policy.json
 }
 
 
-resource aws_iam_role_policy_attachment ecs_task_execution_attachment {
-  role       = aws_iam_role.ecs_task_execution_role.name
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_attachment" {
+  role = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 
-resource aws_ecs_cluster ecs_cluster {
+resource "aws_ecs_cluster" "ecs_cluster" {
   name = var.project_name
 }
 
 
-resource aws_cloudwatch_log_group log_group {
+resource "aws_cloudwatch_log_group" "log_group" {
   name = "${var.project_name}-log-group"
 }
 
 
-resource aws_ecs_task_definition task_definition {
+resource "aws_ecs_task_definition" "task_definition" {
   family                = var.project_name
   container_definitions = <<DEFINITION
 [{
@@ -256,7 +256,7 @@ DEFINITION
 }
 
 
-resource aws_ecs_service ecs_service {
+resource "aws_ecs_service" "ecs_service" {
   name                = var.project_name
   cluster             = aws_ecs_cluster.ecs_cluster.id
   task_definition     = aws_ecs_task_definition.task_definition.arn
@@ -266,8 +266,8 @@ resource aws_ecs_service ecs_service {
 
 
   network_configuration {
-    subnets          = [aws_subnet.tf_public_subnet.id, aws_subnet.tf_public_subnet_2.id]
-    security_groups  = [aws_security_group.ecs_tasks.id, aws_security_group.alb.id]
+    subnets = [aws_subnet.tf_public_subnet.id, aws_subnet.tf_public_subnet_2.id]
+    security_groups = [aws_security_group.ecs_tasks.id, aws_security_group.alb.id]
     assign_public_ip = true
   }
 
