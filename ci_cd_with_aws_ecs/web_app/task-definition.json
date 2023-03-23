@@ -6,9 +6,18 @@
     "containerDefinitions": [
         {
             "name": "site",
-            "image": "",
-            "resourceRequirements": null,
+            "image": "772320319753.dkr.ecr.us-east-1.amazonaws.com/github-actions-ecr:1.0.0",
+            "cpu": 0,
             "essential": true,
+            "networkMode": "awsvpc",
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                  "awslogs-group": "github-actions-ecr-log-group",
+                  "awslogs-region": "us-east-1",
+                  "awslogs-stream-prefix": "site"
+                    }
+                },
             "portMappings": [
                 {
                     "hostPort": 80,
@@ -16,14 +25,16 @@
                     "protocol": "tcp"
                 }
                 
-            ]
+            ],
+            "privileged": false,
+            "readonlyRootFilesystem": false
         }
     ],
     "volumes": [],
     "networkMode": "awsvpc",
     "memory": "512",
     "cpu": "256",
-    "executionRoleArn": "arn:aws:iam::{{ACCOUNT_ID}}:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::772320319753:role/ecsTaskExecutionRole",
     "family": "github-actions-ecr",
     "taskRoleArn": "",
     "placementConstraints": []

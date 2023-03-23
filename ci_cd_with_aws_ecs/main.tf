@@ -219,8 +219,12 @@ resource "aws_cloudwatch_log_group" "log_group" {
 }
 
 
+
 resource "aws_ecs_task_definition" "task_definition" {
   family                = var.project_name
+  
+
+
   container_definitions = <<DEFINITION
 [{
     "name": "site",
@@ -256,6 +260,7 @@ DEFINITION
 }
 
 
+
 resource "aws_ecs_service" "ecs_service" {
   name                = var.project_name
   cluster             = aws_ecs_cluster.ecs_cluster.id
@@ -264,6 +269,9 @@ resource "aws_ecs_service" "ecs_service" {
   desired_count       = var.desired_count
   scheduling_strategy = "REPLICA"
 
+  deployment_controller {
+    type = "ECS"
+  }
 
   network_configuration {
     subnets = [aws_subnet.tf_public_subnet.id, aws_subnet.tf_public_subnet_2.id]
@@ -277,5 +285,7 @@ resource "aws_ecs_service" "ecs_service" {
     container_port   = 80
   }
 
-  depends_on = [aws_alb_listener.alb_listener]
+  depends_on = [aws_alb_listener.alb_listener, 
+                aws_cloudwatch_log_group.log_group, 
+                aws_ecs_task_definition.task_definition]
 }
