@@ -6,7 +6,7 @@ output ecr_image {
   value = var.ecr_image
 }
 
-output alb_dns_name {
+output elb_dns_name {
   value = "http://${aws_alb.alb.dns_name}"
 }
 
