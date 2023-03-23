@@ -282,3 +282,4 @@ resource "aws_ecs_service" "ecs_service" {
 
   depends_on = [aws_alb_listener.alb_listener, aws_cloudwatch_log_group.log_group, aws_ecs_task_definition.task_definition]
 }
+
