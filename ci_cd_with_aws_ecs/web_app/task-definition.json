@@ -9,7 +9,6 @@
             "image": "772320319753.dkr.ecr.us-east-1.amazonaws.com/github-actions-ecr:1.0.0",
             "cpu": 0,
             "essential": true,
-            "networkMode": "awsvpc",
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
