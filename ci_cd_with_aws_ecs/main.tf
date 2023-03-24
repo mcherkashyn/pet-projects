@@ -158,7 +158,7 @@ resource "aws_alb_listener" "alb_listener" {
 }
 
 
-resource "aws_ecr_repository" "demo-repository" {
+resource "aws_ecr_repository" "ecr_repository" {
   name                 = var.project_name
   image_tag_mutability = "MUTABLE"
   force_delete = true
@@ -177,7 +177,7 @@ data "aws_iam_policy_document" "ecs_assume_role_policy" {
 
 
 resource "aws_iam_role" "ecs_service_role" {
-  name               = "${var.project_name}-ecs-service-role"
+  name               = "ecsServiceRole"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
 }
 

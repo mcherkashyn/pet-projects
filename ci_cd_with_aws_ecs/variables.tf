@@ -20,7 +20,6 @@ variable project_name {
   default = "github-actions-ecr"
 }
 
-
 variable ecr_image {
   type = string
 }
