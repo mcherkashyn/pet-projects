@@ -1,4 +1,4 @@
-![678-1](https://user-images.githubusercontent.com/107031880/227448246-e68b4243-8cb2-4be4-b4f0-a537ddcf6ff3.png)
+![678](https://user-images.githubusercontent.com/107031880/227448376-e7456872-b6d5-41c8-bd58-303fc8d96bd7.png)
 
 In this project, I use Terraform to deploy the infrastructure to AWS, including AWS ECS for my simple Docker web application with CloudWatch logging feature. As CI/CD pipeline, I use GitHub actions.
 
