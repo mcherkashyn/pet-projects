@@ -12,7 +12,7 @@
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                  "awslogs-group": "github_actions_ecr_log_group",
+                  "awslogs-group": "github-actions-ecr-log-group",
                   "awslogs-region": "us-east-1",
                   "awslogs-stream-prefix": "site"
                     }
@@ -34,7 +34,7 @@
     "memory": "512",
     "cpu": "256",
     "executionRoleArn": "arn:aws:iam::{{ACCOUNT_ID}}:role/ecsTaskExecutionRole",
-    "family": "github_actions_ecr",
+    "family": "github-actions-ecr",
     "taskRoleArn": "",
     "placementConstraints": []
 }
