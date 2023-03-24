@@ -1,3 +1,5 @@
+![34345](https://user-images.githubusercontent.com/107031880/227454454-5ace4080-39ed-472a-ae93-1a766da708dd.png)
+
 In this project, I use Terraform to automate the deployment of a simple Docker web application, using Jenkins for CI/CD pipeline.
 
 Project steps:
