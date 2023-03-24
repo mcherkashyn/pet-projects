@@ -161,6 +161,7 @@ resource "aws_alb_listener" "alb_listener" {
 resource "aws_ecr_repository" "demo-repository" {
   name                 = var.project_name
   image_tag_mutability = "MUTABLE"
+  force_delete = true
 }
 
 
@@ -173,6 +174,7 @@ data "aws_iam_policy_document" "ecs_assume_role_policy" {
     }
   }
 }
+
 
 resource "aws_iam_role" "ecs_service_role" {
   name               = "${var.project_name}-ecs-service-role"
@@ -282,4 +284,3 @@ resource "aws_ecs_service" "ecs_service" {
 
   depends_on = [aws_alb_listener.alb_listener, aws_cloudwatch_log_group.log_group, aws_ecs_task_definition.task_definition]
 }
-
