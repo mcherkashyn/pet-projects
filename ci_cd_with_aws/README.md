@@ -1,4 +1,4 @@
-![diagram_3](https://user-images.githubusercontent.com/107031880/227433901-e41da33c-777f-4a40-863f-159cb8a242f5.png)
+![676745](https://user-images.githubusercontent.com/107031880/227435493-7510b79c-6693-4835-b868-f0933189424f.png)
 
 In this project, I use Terraform to automate the deployment of a simple web application, using GitHub actions for CI/CD pipeline.
 
