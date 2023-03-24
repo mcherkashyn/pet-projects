@@ -1,3 +1,5 @@
+![77777](https://user-images.githubusercontent.com/107031880/227459439-6a621066-f23a-47a8-9a65-22d756bfee97.png)
+
 In this project, I use Terraform to automate the deployment of a simple web application, connected to an AWS RDS database.
 
 Project steps:
