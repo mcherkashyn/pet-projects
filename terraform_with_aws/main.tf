@@ -151,7 +151,7 @@ resource "aws_security_group" "tf_rds_sg" {
 
 resource "aws_db_subnet_group" "tf_db_subnet_group" {
   name       = "tf_db_subnet_group"
-  subnet_ids = [for subnet in aws_subnet.tf_private_subnet : subnet.id]
+  subnet_ids = [aws_subnet.tf_private_subnet.id]
 
   tags = {
     Name = "tf_db_subnet_group"
