@@ -77,40 +77,52 @@ resource "aws_route_table_association" "route_table_association_2" {
 }
 
 
-resource "aws_security_group" "lb" {
-  name        = "${var.project_name}-lb"
-  description = "inbound: 80,443 + outbound: all"
-  vpc_id      = aws_vpc.tf_vpc.id
-
+resource "aws_security_group" "tf_monitoring_asg_sg" {
+  name = "tf_monitoring_asg_sg"
   ingress {
-    protocol    = "tcp"
-    from_port   = 80
-    to_port     = 80
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
+    security_groups = [aws_security_group.tf_monitoring_lb_sg.id]
   }
 
+  egress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    security_groups = [aws_security_group.tf_monitoring_lb_sg.id]
+  }
+
+  vpc_id = aws_vpc.tf_vpc.id
+}
+
+
+resource "aws_security_group" "tf_monitoring_lb_sg" {
+  name = "tf_monitoring_lb_sg"
   ingress {
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
-    from_port   = 443
-    to_port     = 443
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
     from_port   = 0
     to_port     = 0
-    protocol    = -1
+    protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  vpc_id = aws_vpc.tf_vpc.id
 }
 
 
-resource "aws_launch_configuration" "terramino" {
-  name_prefix     = "tf_prometheus_lc"
+resource "aws_launch_configuration" "tf_monitoring_lc" {
+  name_prefix     = "tf_monitoring_lc"
   image_id        = var.settings.ec2_instance.ami
   instance_type   = var.settings.ec2_instance.instance_type
   user_data       = file("user_data.sh")
-  security_groups = [aws_security_group.lb.id]
+  security_groups = [aws_security_group.tf_monitoring_asg_sg.id]
 
   lifecycle {
     create_before_destroy = true
@@ -118,78 +130,45 @@ resource "aws_launch_configuration" "terramino" {
 }
 
 
-resource "aws_autoscaling_group" "terramino" {
+resource "aws_autoscaling_group" "tf_monitoring_asg" {
   min_size             = 1
   max_size             = 3
   desired_capacity     = 1
-  launch_configuration = aws_launch_configuration.terramino.name
+  launch_configuration = aws_launch_configuration.tf_monitoring_lc.name
   vpc_zone_identifier  = [aws_subnet.tf_public_subnet.id, aws_subnet.tf_public_subnet_2.id]
 }
 
 
-resource "aws_lb" "terramino" {
-  name               = "learn-asg-terramino-lb"
+resource "aws_lb" "tf_monitoring_lb" {
+  name               = "tf-monitoring-lb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.lb.id]
+  security_groups    = [aws_security_group.tf_monitoring_lb_sg.id]
   subnets            = [aws_subnet.tf_public_subnet.id, aws_subnet.tf_public_subnet_2.id]
 }
 
 
 resource "aws_lb_listener" "terramino" {
-  load_balancer_arn = aws_lb.terramino.arn
+  load_balancer_arn = aws_lb.tf_monitoring_lb.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.hashicups.arn
+    target_group_arn = aws_lb_target_group.tf_monitoring_lb_tg.arn
   }
 }
 
 
-resource "aws_lb_target_group" "terramino" {
-   name     = "learn-asg-terramino"
+resource "aws_lb_target_group" "tf_monitoring_lb_tg" {
+   name     = "tf-monitoring-lb-tg"
    port     = 80
    protocol = "HTTP"
    vpc_id   = aws_vpc.tf_vpc.id
  }
 
-resource "aws_autoscaling_attachment" "terramino" {
-  autoscaling_group_name = aws_autoscaling_group.terramino.id
-  alb_target_group_arn   = aws_lb_target_group.terramino.arn
+
+resource "aws_autoscaling_attachment" "tf_monitoring_asg_attachment" {
+  autoscaling_group_name = aws_autoscaling_group.tf_monitoring_asg.id
+  lb_target_group_arn   = aws_lb_target_group.tf_monitoring_lb_tg.arn
 }
-
-
-
-
-
-
-
-
-
-
-
-data "aws_iam_policy_document" "ecs_assume_role_policy" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
-    }
-  }
-}
-
-
-resource "aws_iam_role" "ecs_service_role" {
-  name               = "ecsServiceRole"
-  assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
-}
-
-
-resource "aws_iam_role_policy_attachment" "ecs_service_attachment" {
-  role       = aws_iam_role.ecs_service_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
-}
-
-

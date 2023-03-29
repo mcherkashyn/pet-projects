@@ -2,15 +2,6 @@ variable "aws_region" {
         default = "us-east-1"
 }
 
-variable "subnet_count" {
-        description = "Number of subnets"
-        type = map(number)
-        default = {
-                public = 1,
-                private = 2,
-        }
-}
-
 variable "vpc_cidr_block" {
         description = "CIDR block for vpc"
         default = "172.20.0.0/16"
@@ -24,7 +15,6 @@ variable "public_subnet_cidr_blocks" {
                 "172.20.2.0/24"
         ]
 }
-
 
 variable "settings" {
         description = "Configuration settings"
