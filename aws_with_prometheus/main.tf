@@ -8,6 +8,83 @@ data "aws_availability_zones" "available" {
 }
 
 
+resource "aws_iam_role" "tf_monitoring_master_role" {
+  name = "prometheusEc2Role"
+
+  assume_role_policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "ec2.amazonaws.com"
+            },
+            "Action": "sts:AssumeRole"
+        }
+    ]
+})
+
+  tags = {
+      tag-key = "prometheus-ec2-role"
+  }
+}
+
+
+resource "aws_iam_instance_profile" "tf_monitoring_master_ip" {
+  name = "tf_monitoring_master_ip"
+  role = aws_iam_role.tf_monitoring_master_role.name
+}
+
+
+resource "aws_iam_role_policy" "tf_monitoring_master_policy" {
+  name = "tf_monitoring_master_policy"
+  role = aws_iam_role.tf_monitoring_master_role.id
+
+  policy = jsonencode({
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Action": "ec2:*",
+                "Effect": "Allow",
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": "elasticloadbalancing:*",
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": "cloudwatch:*",
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": "autoscaling:*",
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": "iam:CreateServiceLinkedRole",
+                "Resource": "*",
+                "Condition": {
+                    "StringEquals": {
+                        "iam:AWSServiceName": [
+                            "autoscaling.amazonaws.com",
+                            "ec2scheduled.amazonaws.com",
+                            "elasticloadbalancing.amazonaws.com",
+                            "spot.amazonaws.com",
+                            "spotfleet.amazonaws.com",
+                            "transitgateway.amazonaws.com"
+                        ]
+                    }
+                }
+            }
+        ]
+    })
+}
+
+
 resource "aws_vpc" "tf_vpc" {
   cidr_block = var.vpc_cidr_block
   enable_dns_hostnames = true
@@ -79,19 +156,104 @@ resource "aws_route_table_association" "route_table_association_2" {
 
 resource "aws_security_group" "tf_monitoring_asg_sg" {
   name = "tf_monitoring_asg_sg"
-  ingress {
-    from_port       = 80
-    to_port         = 80
-    protocol        = "tcp"
-    security_groups = [aws_security_group.tf_monitoring_lb_sg.id]
-  }
 
-  egress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
-    security_groups = [aws_security_group.tf_monitoring_lb_sg.id]
-  }
+    ingress {
+        from_port   = -1
+        to_port     = -1
+        protocol    = "icmp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port       = 80
+        to_port         = 80
+        protocol        = "tcp"
+        security_groups = [aws_security_group.tf_monitoring_lb_sg.id]
+    }
+
+    ingress {
+        from_port       = 9100
+        to_port         = 9100
+        protocol        = "tcp"
+        security_groups = [aws_security_group.tf_monitoring_lb_sg.id]
+    }
+
+    ingress {
+        from_port       = 9090
+        to_port         = 9090
+        protocol        = "tcp"
+        security_groups = [aws_security_group.tf_monitoring_lb_sg.id]
+    }
+
+    ingress {
+        from_port       = 3000
+        to_port         = 3000
+        protocol        = "tcp"
+        security_groups = [aws_security_group.tf_monitoring_lb_sg.id]
+    }
+
+    egress {
+        from_port       = 0
+        to_port         = 0
+        protocol        = "-1"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+  vpc_id = aws_vpc.tf_vpc.id
+}
+
+
+resource "aws_security_group" "tf_monitoring_master_sg" {
+  name = "tf_monitoring_master_sg"
+
+    ingress {
+        from_port   = -1
+        to_port     = -1
+        protocol    = "icmp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port       = 80
+        to_port         = 80
+        protocol        = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port       = 22
+        to_port         = 22
+        protocol        = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port       = 9090
+        to_port         = 9090
+        protocol        = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port       = 9100
+        to_port         = 9100
+        protocol        = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port       = 3000
+        to_port         = 3000
+        protocol        = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port       = 0
+        to_port         = 0
+        protocol        = "-1"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
 
   vpc_id = aws_vpc.tf_vpc.id
 }
@@ -99,21 +261,74 @@ resource "aws_security_group" "tf_monitoring_asg_sg" {
 
 resource "aws_security_group" "tf_monitoring_lb_sg" {
   name = "tf_monitoring_lb_sg"
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+    ingress {
+        from_port   = -1
+        to_port     = -1
+        protocol    = "icmp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port       = 9090
+        to_port         = 9090
+        protocol        = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port       = 9100
+        to_port         = 9100
+        protocol        = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    ingress {
+        from_port       = 3000
+        to_port         = 3000
+        protocol        = "tcp"
+        cidr_blocks      = ["0.0.0.0/0"]
+    }
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
 
   vpc_id = aws_vpc.tf_vpc.id
+}
+
+
+resource "aws_instance" "tf_monitoring_master" {
+  ami = var.settings.ec2_instance.ami
+  instance_type = var.settings.ec2_instance.instance_type
+  key_name = var.settings.ec2_instance.key_name
+  iam_instance_profile = aws_iam_instance_profile.tf_monitoring_master_ip.name
+  security_groups = [aws_security_group.tf_monitoring_master_sg.id]
+  subnet_id = aws_subnet.tf_public_subnet.id
+  user_data = file("user_data_master.sh")
+  tags = {
+    Name = "tf_monitoring_master"
+    Terraform = "true"
+  }
+}
+
+
+resource "aws_eip" "tf_monitoring_master_eip" {
+  instance = aws_instance.tf_monitoring_master.id
+  vpc = true
+  tags = {
+    Name = "tf_monitoring_master_eip"
+  }
 }
 
 
@@ -131,11 +346,17 @@ resource "aws_launch_configuration" "tf_monitoring_lc" {
 
 
 resource "aws_autoscaling_group" "tf_monitoring_asg" {
-  min_size             = 1
-  max_size             = 3
-  desired_capacity     = 1
-  launch_configuration = aws_launch_configuration.tf_monitoring_lc.name
-  vpc_zone_identifier  = [aws_subnet.tf_public_subnet.id, aws_subnet.tf_public_subnet_2.id]
+    min_size             = 1
+    max_size             = 3
+    desired_capacity     = 3
+    launch_configuration = aws_launch_configuration.tf_monitoring_lc.name
+    vpc_zone_identifier  = [aws_subnet.tf_public_subnet.id]
+    tag {
+        key                 = "Name"
+        value               = "tf_monitoring_asg"
+        propagate_at_launch = true
+    }
+    depends_on = [aws_instance.tf_monitoring_master]
 }
 
 
