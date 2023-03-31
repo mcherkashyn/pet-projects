@@ -21,7 +21,7 @@ variable project_name {
 }
 
 variable ecr_image {
-  type = string
+  default = "772320319753.dkr.ecr.us-east-1.amazonaws.com/github-actions-ecr:1.0.0"
 }
 
 variable desired_count {
