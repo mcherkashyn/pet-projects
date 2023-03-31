@@ -2,6 +2,14 @@ variable "aws_region" {
         default = "us-east-1"
 }
 
+variable "access_key" {
+        type = string
+}
+
+variable "secret_key" {
+        type = string
+}
+
 variable "vpc_cidr_block" {
         description = "CIDR block for vpc"
         default = "172.20.0.0/16"
@@ -21,7 +29,6 @@ variable "settings" {
         type = map(any)
         default = {
                 "ec2_instance" = {
-                        count = 1
                         ami = "ami-0557a15b87f6559cf"
                         instance_type = "t2.micro"
                         key_name = "test-key-pair"

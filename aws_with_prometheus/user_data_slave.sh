@@ -1,5 +1,8 @@
 #!/bin/bash
+
+#install node_exporter
 sudo apt-get update
+sudo echo 'GatewayPorts yes' | sudo tee --append /etc/ssh/sshd_config
 sudo wget https://github.com/prometheus/node_exporter/releases/download/v1.5.0/node_exporter-1.5.0.linux-amd64.tar.gz
 sudo tar -xf node_exporter-1.5.0.linux-amd64.tar.gz
 sudo mv node_exporter-1.5.0.linux-amd64/node_exporter /usr/local/bin
