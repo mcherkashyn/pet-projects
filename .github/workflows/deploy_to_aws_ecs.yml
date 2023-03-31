@@ -41,10 +41,10 @@ jobs:
         echo "::set-output name=image::$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG"
       working-directory: "./ci_cd_with_aws_ecs/web_app"
 
-    - name: Sed
-      run: |
-        cd ci_cd_with_aws_ecs/web_app
-        sed -i 's/{{ACCOUNT_ID}}/${{ secrets.ACCOUNT_ID }}/' task-definition.json
+    # - name: Sed
+    #   run: |
+    #     cd ci_cd_with_aws_ecs/web_app
+    #     sed -i 's/{{ACCOUNT_ID}}/${{ secrets.ACCOUNT_ID }}/' task-definition.json
 
     - name: Render Amazon ECS task definition
       id: task-def
