@@ -151,7 +151,7 @@ resource "aws_security_group" "tf_rds_sg" {
 
 resource "aws_db_subnet_group" "tf_db_subnet_group" {
   name       = "tf_db_subnet_group"
-  subnet_ids = [aws_subnet.tf_private_subnet.id]
+  subnet_ids = [aws_subnet.tf_private_subnet[0].id, aws_subnet.tf_private_subnet[1].id]
 
   tags = {
     Name = "tf_db_subnet_group"
@@ -233,6 +233,10 @@ sudo docker run -p 80:80 docker_web_app
 #cd ..
 #sudo mv flaskapp /var/www/html
 #sudo systemctl reload apache2
+
+
+
+
 
 EOF
 
