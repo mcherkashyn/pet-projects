@@ -197,27 +197,11 @@ sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmo
 sudo echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update
 sudo apt install docker-ce docker-ce-cli containerd.io -y
-#sudo mkdir //project && cd /project
-#sudo git clone https://github.com/mcherkashyn/pet-projects.git
-#cd pet-projects/docker_with_aws/web_app/
-#sudo docker build -t docker_web_app .
-#sudo docker run --log-driver=awslogs --log-opt awslogs-region=us-east-1 --log-opt awslogs-group="/flask_logs" -p 80:80 docker_web_app
 
-
-
-
-#install python
-sudo apt-get update
+#download web-app and provide db credentials
 sudo apt install git
-sudo apt-get install python3
-sudo apt install python3-pip -y
-#sudo apt install apache2 -y
-#sudo apt-get install libapache2-mod-wsgi-py3
-#sudo pip3 install Flask SQLAlchemy Flask-SQLAlchemy psycopg2-binary
-#sudo mv /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/000-default.conf.old
 sudo git clone https://github.com/mcherkashyn/pet-projects.git
 cd pet-projects/test_docker_with_rds/flaskapp
-#sudo mv apache2_config.conf /etc/apache2/sites-enabled/
 sudo echo 'dialect = "${var.settings.database.dialect}"' | sudo tee -a local_settings.py
 sudo echo 'username = "${var.settings.database.username}"' | sudo tee -a local_settings.py
 sudo echo 'password = "${var.settings.database.password}"' | sudo tee -a local_settings.py
@@ -225,19 +209,9 @@ sudo echo 'host = "${aws_db_instance.tf_rds.address}"' | sudo tee -a local_setti
 sudo echo 'port = "${var.settings.database.port}"' | sudo tee -a local_settings.py
 sudo echo 'database = "${var.settings.database.db_name}"' | sudo tee -a local_settings.py
 
-
+#build and run Docker image
 sudo docker build -t docker_web_app .
 sudo docker run -p 80:80 docker_web_app
-
-
-#cd ..
-#sudo mv flaskapp /var/www/html
-#sudo systemctl reload apache2
-
-
-
-
-
 EOF
 
   tags = {
