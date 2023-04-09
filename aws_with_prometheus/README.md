@@ -1,4 +1,4 @@
-
+![3434](https://user-images.githubusercontent.com/107031880/230799589-9cba9987-be2e-463f-8393-5e186301c8a2.png)
 
 In this project, I use Terraform to deploy the infrastructure to AWS, it includes such monitoring solution: EC2 master instance for running Prometheus and Grafana, 
 an auto-scaling group with slave instances, which send metrics to master instance with node_exporter.
