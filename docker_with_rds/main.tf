@@ -149,9 +149,67 @@ resource "aws_security_group" "tf_rds_sg" {
 }
 
 
+resource "aws_iam_role" "tf_ec2_logs_role" {
+  name = "tf_ec2_logs_role"
+  
+  assume_role_policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Service": "ec2.amazonaws.com"
+        },
+        "Action": "sts:AssumeRole"
+      }
+    ]
+  })
+
+  inline_policy {
+    name = "my_inline_policy"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+            "Action": "ec2:*",
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "cloudwatch:*",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "logs:*",
+            "Resource": "*"
+        },
+      ]
+    })
+  }
+
+  tags = {
+    "tag-key" = "ec2_logs_role"
+  }
+}
+
+
+resource "aws_iam_instance_profile" "tf_iam_role_profile" {
+  name = "tf_iam_role_profile"
+  role = aws_iam_role.tf_ec2_logs_role.name
+}
+
+
+resource "aws_cloudwatch_log_group" "flask_logs" {
+  name = "/flask_logs"
+}
+
+
 resource "aws_db_subnet_group" "tf_db_subnet_group" {
   name       = "tf_db_subnet_group"
-  subnet_ids = [aws_subnet.tf_private_subnet[0].id, aws_subnet.tf_private_subnet[1].id]
+  subnet_ids = [for subnet in aws_subnet.tf_private_subnet : subnet.id]
 
   tags = {
     Name = "tf_db_subnet_group"
@@ -184,6 +242,7 @@ resource "aws_instance" "tf_ec2_instance" {
   count = var.settings.ec2_instance.count
   ami = var.settings.ec2_instance.ami
   instance_type = var.settings.ec2_instance.instance_type
+  iam_instance_profile = aws_iam_instance_profile.tf_iam_role_profile.name
   key_name = var.settings.ec2_instance.key_name
   security_groups = [aws_security_group.tf_ec2_sg.id]
   subnet_id = aws_subnet.tf_public_subnet[count.index].id
@@ -211,7 +270,7 @@ sudo echo 'database = "${var.settings.database.db_name}"' | sudo tee -a local_se
 
 #build and run Docker image
 sudo docker build -t docker_web_app .
-sudo docker run -p 80:80 docker_web_app
+sudo docker run --log-driver=awslogs --log-opt awslogs-region=us-east-1 --log-opt awslogs-group="/flask_logs" -p 80:80 docker_web_app
 EOF
 
   tags = {
