@@ -15,6 +15,6 @@ output "database_endpoint" {
     value = aws_db_instance.tf_rds.address
 }
 
-output log_group {
+output "log_group" {
   value = "https://console.aws.amazon.com/cloudwatch/home?region=${var.aws_region}#logsV2:log-groups/log-group/${aws_cloudwatch_log_group.flask_logs.name}"
 }
