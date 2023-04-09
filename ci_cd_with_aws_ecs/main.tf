@@ -20,22 +20,12 @@ resource "aws_vpc" "tf_vpc" {
 
 
 resource "aws_subnet" "tf_public_subnet" {
+  count = var.subnet_count.public
   vpc_id            = aws_vpc.tf_vpc.id
-  cidr_block        = var.public_subnet_cidr_blocks[0]
-  availability_zone = data.aws_availability_zones.available.names[0]
+  cidr_block        = var.public_subnet_cidr_blocks[count.index]
+  availability_zone = data.aws_availability_zones.available.names[count.index]
   tags = {
     Name = "tf_public_subnet"
-    Terraform = "true"
-  }
-}
-
-
-resource "aws_subnet" "tf_public_subnet_2" {
-  vpc_id            = aws_vpc.tf_vpc.id
-  cidr_block        = var.public_subnet_cidr_blocks[1]
-  availability_zone = data.aws_availability_zones.available.names[1]
-  tags = {
-    Name = "tf_public_subnet_2"
     Terraform = "true"
   }
 }
@@ -65,14 +55,9 @@ resource "aws_route_table" "tf_public_route_table" {
 }
 
 
-resource "aws_route_table_association" "route_table_association_1" {
-  subnet_id      = aws_subnet.tf_public_subnet.id
-  route_table_id = aws_route_table.tf_public_route_table.id
-}
-
-
-resource "aws_route_table_association" "route_table_association_2" {
-  subnet_id      = aws_subnet.tf_public_subnet_2.id
+resource "aws_route_table_association" "route_table_association" {
+  count = var.subnet_count.public
+  subnet_id      = aws_subnet.tf_public_subnet[count.index].id
   route_table_id = aws_route_table.tf_public_route_table.id
 }
 
@@ -129,7 +114,7 @@ resource "aws_security_group" "ecs_tasks" {
 resource "aws_alb" "alb" {
   name               = var.project_name
   load_balancer_type = "application"
-  subnets            = [aws_subnet.tf_public_subnet.id, aws_subnet.tf_public_subnet_2.id]
+  subnets            = [for subnet in aws_subnet.tf_public_subnet : subnet.id]
   security_groups    = [aws_security_group.alb.id]
 
   tags = {
@@ -271,7 +256,7 @@ resource "aws_ecs_service" "ecs_service" {
   }
 
   network_configuration {
-    subnets = [aws_subnet.tf_public_subnet.id, aws_subnet.tf_public_subnet_2.id]
+    subnets = [for subnet in aws_subnet.tf_public_subnet : subnet.id]
     security_groups = [aws_security_group.ecs_tasks.id, aws_security_group.alb.id]
     assign_public_ip = true
   }

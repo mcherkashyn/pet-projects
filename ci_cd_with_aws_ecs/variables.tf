@@ -7,6 +7,14 @@ variable "vpc_cidr_block" {
         default = "172.20.0.0/16"
 }
 
+variable "subnet_count" {
+        description = "Number of subnets"
+        type = map(number)
+        default = {
+                public = 2,
+        }
+}
+
 variable "public_subnet_cidr_blocks" {
         description = "CIDR blocks for public subnets"
         type = list(string)
