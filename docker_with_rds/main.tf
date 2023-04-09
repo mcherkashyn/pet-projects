@@ -151,7 +151,7 @@ resource "aws_security_group" "tf_rds_sg" {
 
 resource "aws_db_subnet_group" "tf_db_subnet_group" {
   name       = "tf_db_subnet_group"
-  subnet_ids = [aws_subnet.tf_private_subnet.id]
+  subnet_ids = [aws_subnet.tf_private_subnet[0].id, aws_subnet.tf_private_subnet[1].id]
 
   tags = {
     Name = "tf_db_subnet_group"
@@ -189,26 +189,29 @@ resource "aws_instance" "tf_ec2_instance" {
   subnet_id = aws_subnet.tf_public_subnet[count.index].id
   user_data = <<EOF
 #!/bin/bash
+
+#install Docker
 sudo apt-get update
+sudo apt install apt-transport-https ca-certificates curl gnupg lsb-release -y
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+sudo echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt install docker-ce docker-ce-cli containerd.io -y
+
+#download web-app and provide db credentials
 sudo apt install git
-sudo apt-get install python3
-sudo apt install python3-pip -y
-sudo apt install apache2 -y
-sudo apt-get install libapache2-mod-wsgi-py3
-sudo pip3 install Flask SQLAlchemy Flask-SQLAlchemy psycopg2-binary
-sudo mv /etc/apache2/sites-enabled/000-default.conf /etc/apache2/sites-enabled/000-default.conf.old
 sudo git clone https://github.com/mcherkashyn/pet-projects.git
-cd pet-projects/terraform_with_aws/flaskapp
-sudo mv apache2_config.conf /etc/apache2/sites-enabled/
+cd pet-projects/docker_with_rds/flaskapp
 sudo echo 'dialect = "${var.settings.database.dialect}"' | sudo tee -a local_settings.py
 sudo echo 'username = "${var.settings.database.username}"' | sudo tee -a local_settings.py
 sudo echo 'password = "${var.settings.database.password}"' | sudo tee -a local_settings.py
 sudo echo 'host = "${aws_db_instance.tf_rds.address}"' | sudo tee -a local_settings.py
 sudo echo 'port = "${var.settings.database.port}"' | sudo tee -a local_settings.py
 sudo echo 'database = "${var.settings.database.db_name}"' | sudo tee -a local_settings.py
-cd ..
-sudo mv flaskapp /var/www/html
-sudo systemctl reload apache2
+
+#build and run Docker image
+sudo docker build -t docker_web_app .
+sudo docker run -p 80:80 docker_web_app
 EOF
 
   tags = {
