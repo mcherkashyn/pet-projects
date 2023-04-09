@@ -1,3 +1,5 @@
+![77777](https://user-images.githubusercontent.com/107031880/230801230-b78c2190-8a35-408f-80a9-19e3ce15dd26.png)
+
 In this project, I use Terraform to automate the deployment of a simple Dockerized web application with CloudWatch logging, connected to an AWS RDS database.
 
 Project steps:
