@@ -1,0 +1,163 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-deployment
+  namespace: monitoring
+  labels:
+    app: prometheus-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-server
+  template:
+    metadata:
+      labels:
+        app: prometheus-server
+    spec:
+      containers:
+      - name: prometheus
+        image: prom/prometheus
+        args:
+        - "--storage.tsdb.retention.time=12h"
+        - "--config.file=/etc/prometheus/prometheus.yml"
+        - "--storage.tsdb.path=/prometheus/"
+        ports:
+        - containerPort: 9090
+        resources:
+            requests:
+              cpu: 500m
+              memory: 500M
+            limits:
+              cpu: 1
+              memory: 1Gi
+        volumeMounts:
+        - name: prometheus-config-volume
+          mountPath: /etc/prometheus/
+        - name: prometheus-storage-volume
+          mountPath: /prometheus/
+      volumes:
+      - name: prometheus-config-volume
+        configMap:
+          defaultMode: 420
+          name: prometheus-server-conf
+
+      - name: prometheus-storage-volume
+        emptyDir: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: monitoring
+  annotations:
+      prometheus.io/scrape: 'true'
+      prometheus.io/port:   '9090'
+spec:
+  selector:
+    app: prometheus-server
+  type: NodePort
+  ports:
+  - port: 8080
+    targetPort: 9090
+    nodePort: 30000
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-server-conf
+  labels:
+    name: prometheus-server-conf
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 5s
+      evaluation_interval: 5s
+    scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+      - targets: ['localhost:9090']
+
+      
+# - job_name: 'blackbox'
+#   metrics_path: /probe
+#   params:
+#     module: [http_2xx]
+#   static_configs:
+#     - targets:
+#       - https://stackoverflow.com
+#       - https://www.google.com
+#       - https://example.com
+#       - https://scala-lang.org
+#       - https://helm.sh
+#   relabel_configs:
+# - source_labels: [__address__]
+#   target_label: __param_target
+# - source_labels: [__param_target]
+#   # Important!     
+#   target_label: target
+#   # Ensure blackbox-exporter is reachable from Prometheus
+# - target_label: __address__ 
+#   replacement: prometheus-blackbox-exporter.monitoring:9115
+
+---
+
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: blackbox-service
+#   namespace: monitoring
+# spec:
+#   selector:
+#     app: blackbox
+#   ports:
+#   - name: http
+#     port: 9115
+#     targetPort: 9115
+#   type: ClusterIP
+
+# ---
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: blackbox-deployment
+#   namespace: monitoring
+#   labels:
+#     app: blackbox
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: blackbox
+#   template:
+#     metadata:
+#       labels:
+#         app: blackbox
+#     spec:
+#       containers:
+#       - name: blackbox
+#         image: prom/blackbox-exporter:v0.19.0
+#         args:
+#         - --config.file=/config/config.yml
+#         ports:
+#         - containerPort: 9115
+#         volumeMounts:
+#         - name: config-volume
+#           mountPath: /config/
+#       volumes:
+#       - name: config-volume
+#         configMap:
+#           name: blackbox-config
