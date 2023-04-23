@@ -89,75 +89,130 @@ data:
     - job_name: 'prometheus'
       static_configs:
       - targets: ['localhost:9090']
-
-      
-# - job_name: 'blackbox'
-#   metrics_path: /probe
-#   params:
-#     module: [http_2xx]
-#   static_configs:
-#     - targets:
-#       - https://stackoverflow.com
-#       - https://www.google.com
-#       - https://example.com
-#       - https://scala-lang.org
-#       - https://helm.sh
-#   relabel_configs:
-# - source_labels: [__address__]
-#   target_label: __param_target
-# - source_labels: [__param_target]
-#   # Important!     
-#   target_label: target
-#   # Ensure blackbox-exporter is reachable from Prometheus
-# - target_label: __address__ 
-#   replacement: prometheus-blackbox-exporter.monitoring:9115
+    - job_name: 'kube-api-blackbox'
+      metrics_path: /probe
+      params:
+        module: [http_2xx]
+      static_configs:
+        - targets:
+          - https://stackoverflow.com
+          - https://www.google.com
+          - https://example.com
+          - https://scala-lang.org
+          - https://helm.sh
+      relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        # Important!     
+        target_label: instance
+        # Ensure blackbox-exporter is reachable from Prometheus
+      - target_label: __address__ 
+        replacement: blackbox-exporter.monitoring:9115
 
 ---
 
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: blackbox-service
-#   namespace: monitoring
-# spec:
-#   selector:
-#     app: blackbox
-#   ports:
-#   - name: http
-#     port: 9115
-#     targetPort: 9115
-#   type: ClusterIP
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: blackbox-exporter-config
+  namespace: monitoring
+  labels:
+    k8s-app: blackbox-exporter
+data:
+  blackbox.yaml: |
+    modules:
+      http_2xx:
+        http:
+          no_follow_redirects: true
+          preferred_ip_protocol: ip4
+          valid_http_versions:
+          - HTTP/1.1
+          - HTTP/2.0
+          valid_status_codes: []
+        prober: http
+        timeout: 5s
 
-# ---
+---
 
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: blackbox-deployment
-#   namespace: monitoring
-#   labels:
-#     app: blackbox
-# spec:
-#   replicas: 1
-#   selector:
-#     matchLabels:
-#       app: blackbox
-#   template:
-#     metadata:
-#       labels:
-#         app: blackbox
-#     spec:
-#       containers:
-#       - name: blackbox
-#         image: prom/blackbox-exporter:v0.19.0
-#         args:
-#         - --config.file=/config/config.yml
-#         ports:
-#         - containerPort: 9115
-#         volumeMounts:
-#         - name: config-volume
-#           mountPath: /config/
-#       volumes:
-#       - name: config-volume
-#         configMap:
-#           name: blackbox-config
+apiVersion: v1
+kind: Service
+metadata:
+  name: blackbox-exporter
+  namespace: monitoring
+  labels:
+    k8s-app: blackbox-exporter
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9115
+      protocol: TCP
+  selector:
+    k8s-app: blackbox-exporter
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blackbox-exporter
+  namespace: monitoring
+  labels:
+    k8s-app: blackbox-exporter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: blackbox-exporter
+  template:
+    metadata:
+      labels:
+        k8s-app: blackbox-exporter
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: blackbox-exporter
+          image: "prom/blackbox-exporter"
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+          args:
+            - "--config.file=/config/blackbox.yaml"
+          resources:
+            {}
+          ports:
+            - containerPort: 9115
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          volumeMounts:
+            - mountPath: /config
+              name: config
+        - name: configmap-reload
+          image: "jimmidyson/configmap-reload:v0.2.2"
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+          args:
+            - --volume-dir=/etc/config
+            - --webhook-url=http://localhost:9115/-/reload
+          resources:
+            {}
+          volumeMounts:
+            - mountPath: /etc/config
+              name: config
+              readOnly: true
+      volumes:
+        - name: config
+          configMap:
+            name: blackbox-exporter-config
