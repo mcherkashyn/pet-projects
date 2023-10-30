@@ -4,4 +4,6 @@
 # .tfstate files
 *.tfstate
 *.tfstate.*
+
 .idea
+*builds
