@@ -1,0 +1,20 @@
+name: Test inputs
+
+on: 
+  workflow_dispatch:
+        inputs:
+          test_input:
+            description: 'Test echo variable'     
+            required: true
+            default: ''
+          tags:
+            description: 'Test scenario tags'  
+
+jobs:
+  printInputs:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Test echo commands
+          run: |
+            echo "Test echo: ${{ github.event.inputs.test_input }}"
+            echo "Test tags: ${{ github.event.inputs.tags }}" 
