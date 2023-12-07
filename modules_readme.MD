@@ -1,4 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
+
+<font color="red">This text is red</font>
+
 API gateway module
 ## Requirements
 
