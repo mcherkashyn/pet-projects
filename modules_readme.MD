@@ -1,8 +1,8 @@
 <!-- BEGIN_TF_DOCS -->
 
-<font color="red">This text is red</font>
+https://placehold.it/150/ffffff/ff0000?text=hello
 
-API gateway module
+**API gateway module**
 ## Requirements
 
 | Name | Version |
