@@ -1,9 +1,8 @@
 <!-- BEGIN_TF_DOCS -->
 
 
-```diff
-- API gateway module
-```
+# API gateway module
+
 
 
 ## Requirements
