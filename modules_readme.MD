@@ -1,6 +1,8 @@
 <!-- BEGIN_TF_DOCS -->
 
-https://placehold.it/150/ffffff/ff0000?text=hello
+- ![#f03c15](https://placehold.it/150/ffffff/ff0000?text=hello) `#f03c15`
+
+
 
 **API gateway module**
 ## Requirements
