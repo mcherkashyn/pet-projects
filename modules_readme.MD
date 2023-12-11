@@ -1,3 +1,22 @@
+You can put the string with the parameters for the each node like this:
+
+```yaml
+
+node1:
+    bootnodes: "/ip4/137.66.11.250/udp/4001/quic-v1/p2p/16Uiu2HAmJtYy4A8pzChDQQLrPsu1SQU5apzCftCVaAjFk539CLc9,/ip4/168.220.95.86/udp/4001/quic-v1/p2p/16Uiu2HAmAb5Wac73G2QSQQfarhw95KveAaEUNX6yTXXpmmTtVmNW"
+node2:
+    bootnodes: "/ip4/137.66.11.250/udp/4001/quic-v1/p2p/16Uiu2HAmJtYy4A8pzChDQQLrPsu1SQU5apzCftCVaAjFk539CLc9,/ip4/168.220.95.86/udp/4001/quic-v1/p2p/16Uiu2HAmAb5Wac73G2QSQQfarhw95KveAaEUNX6yTXXpmmTtVmNW"
+
+```
+
+
+
+
+
+
+
+
+
 <!-- BEGIN_TF_DOCS -->
 
 --------------------------------------------------------------------------------------------------------------------------------------------
